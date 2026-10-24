@@ -1,0 +1,46 @@
+LUNA OnStepNinja NS-4000 BLE Handbox - Freeware License
+
+Copyright (c) 2026 Nishioka Sadahiko. All rights reserved.
+
+This license covers ONLY the handbox program in this folder, distributed as
+binaries (the source code is not distributed). It does NOT cover the NS-4000 firmware itself
+(including BleHand.ino), which is open source under GPL v3 together with OnStep.
+
+PERMITTED, free of charge
+- Personal, non-commercial use: download, flash and use it.
+- Giving or lending copies personally (binaries, or built handboxes and
+  boards) to friends and acquaintances AT COST ONLY: the real cost of parts, board and postage, with no
+  profit and no payment for your time. Copies must keep this LICENSE and the
+  copyright notice.
+- As the LGPL 2.1 requires (the binaries contain the Arduino ESP32 core, LGPL 2.1):
+  modifying the binary for your own use by relinking it with a modified version of
+  that library (with the relink kit in lgpl_relink_*/), and reverse engineering it
+  for debugging such modifications.
+
+NOT PERMITTED without the author's prior written permission
+- Selling for profit in any form, online or offline: web shops, auctions,
+  flea-market apps, etc. This includes kits, assembled units, and modified or
+  rebranded versions.
+- Any commercial use: bundling with a product or service for sale, or using it
+  in a business to earn money.
+- Publishing, re-hosting or mirroring the binaries on websites, online stores or file-sharing services other than the
+  author's own official release page. (Personal giving to friends, above, is
+  allowed.)
+- Removing or altering this notice or the author attribution.
+
+Compatible handboxes: the signal format used between the handbox and the NS-4000
+is documented in the GPL-licensed firmware source. This license does not restrict
+anyone from writing their own, independent handbox program for that format.
+
+SAFETY
+The handbox moves a telescope mount. Use it only with the mount's stop and power
+switch within reach, and keep the equipment under your supervision.
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THIS
+SOFTWARE, INCLUDING DAMAGE TO EQUIPMENT. YOU USE IT ENTIRELY AT YOUR OWN RISK.
+
+-------------------------------------------------------------------------------
+Third-party components (see THIRD_PARTY_NOTICES.md) are under their own licenses.

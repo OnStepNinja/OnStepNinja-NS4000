@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<!-- NS-4000 Settings (settings.html) - LUNA OnStepNinja NS-4000 companion app. Built by make_settings.py / build_apps.py from the star chart; do not edit directly.
+     Copyright (c) 2026 Nishioka Sadahiko. All rights reserved. Freeware: see LICENSE (personal use free; at-cost copies to friends OK; no sales, no commercial use, no re-hosting).
+     Star chart parts: LUNA AiBridge StarChart, Copyright (c) 2026 Nishioka Sadahiko. Freeware. -->
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUNA OnStepNinja NS-4000 Settings</title>
+<style>
+  :root{--bg:#05080f;--card:#151b26;--card2:#1d2533;--line:#2a3445;--txt:#e6edf3;--sub:#8b97a8;
+    --accent:#4da3ff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);overflow:hidden;
+    font-family:-apple-system,"Segoe UI",Roboto,"Hiragino Sans",sans-serif;}
+  #cv{position:fixed;inset:0;width:100%;height:100%;touch-action:none;display:block;}
+  .bar{position:fixed;top:0;left:0;right:0;padding:8px 10px;display:flex;align-items:center;gap:10px;
+    background:linear-gradient(#05080fe6,#05080f00);font-size:13px;pointer-events:none;
+    font-variant-numeric:tabular-nums;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--bad);box-shadow:0 0 6px var(--bad);flex:none;}
+  .dot.on{background:var(--ok);box-shadow:0 0 6px var(--ok);}
+  .bar b{color:var(--sub);font-weight:500;font-size:11px;margin-right:3px;}
+  #stt{color:var(--sub);margin-left:auto;}
+  #stt.move{color:var(--warn);} #stt.track{color:var(--ok);}
+  .fab{position:fixed;right:10px;display:flex;flex-direction:column;gap:8px;top:46px;}
+  button{font:inherit;color:var(--txt);cursor:pointer;-webkit-user-select:none;user-select:none;}
+  .fab button{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);
+    background:#151b26d9;font-size:19px;padding:0;}
+  .fab button.act{background:#2b6fd6;border-color:transparent;}
+  .fab .stop{background:#dc2626;border-color:transparent;font-size:11px;font-weight:700;}
+  .panel{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
+    border-radius:16px 16px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));display:none;
+    max-width:560px;margin:0 auto;}
+  .panel.show{display:block;z-index:8;}
+  .panel h2{margin:0 0 2px;font-size:18px;}
+  .panel .sub{color:var(--sub);font-size:13px;line-height:1.6;font-variant-numeric:tabular-nums;}
+  .row{display:flex;gap:8px;margin-top:12px;}
+  .row button{flex:1;padding:12px;border-radius:10px;border:none;font-weight:600;font-size:15px;background:var(--card2);}
+  .row .go{background:linear-gradient(135deg,#4da3ff,#2b6fd6);color:#fff;}
+  #menu{top:auto;bottom:0;max-height:75vh;overflow:auto;}
+  #menu label{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:15px;}
+  #menu input[type=checkbox]{width:20px;height:20px;}
+  #menu .grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
+  #menu h3{margin:14px 0 4px;font-size:12px;color:var(--sub);letter-spacing:.06em;}
+  #menu input[type=number],#menu select{background:var(--card2);border:1px solid var(--line);color:var(--txt);
+    border-radius:8px;padding:8px;font-size:15px;width:100%;}
+  .f2{display:flex;gap:8px;} .f2>div{flex:1;font-size:11px;color:var(--sub);}
+  #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--card2);
+    border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;
+    pointer-events:none;transition:.3s;max-width:90%;}
+  #toast.show{opacity:1;} #toast.err{border-color:var(--bad);color:var(--bad);}
+  #red{position:fixed;inset:0;background:#f00;mix-blend-mode:multiply;pointer-events:none;display:none;z-index:9;}
+  #lunaLink{position:fixed;left:8px;top:32px;z-index:6;font-size:12px;font-weight:700;color:#9fd6ff;text-decoration:none;text-shadow:0 0 4px #000,0 0 4px #000;}
+  #lunaLink:hover{text-decoration:underline;}
+  #minfo{position:fixed;left:8px;top:54px;font-size:11px;white-space:nowrap;line-height:1.55;color:#c9d4e3;pointer-events:none;
+    font-variant-numeric:tabular-nums;text-shadow:0 0 4px #000,0 0 4px #000;}
+  #minfo b{color:var(--sub);font-weight:500;font-size:11px;margin-right:4px;}
+  #minfo .w{color:var(--warn);}
+  #minfo .who{color:var(--sub);font-size:11px;}
+  #minfo b{display:inline-block;min-width:5.2em;}
+  #branding{position:fixed;bottom:6px;right:10px;font-size:11px;color:#666;font-family:monospace;z-index:5;
+    display:flex;align-items:center;gap:8px;}
+  #supportBtn{background:rgba(255,80,120,.15);border:1px solid rgba(255,80,120,.4);color:#ff90ab;border-radius:50%;
+    width:22px;height:22px;padding:0;font-size:12px;line-height:1;}
+  .overlay{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:20;}
+  .overlay.show{display:flex;}
+  .modal{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;max-width:340px;margin:16px;font-size:14px;line-height:1.6;}
+  #ctl{max-width:560px;background:rgba(14,21,34,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border:1px solid #2a3a55;border-bottom:none;box-shadow:0 -8px 30px rgba(0,0,0,.55),0 -1px 0 #4da3ff55;max-height:78vh;overflow:auto;}
+  #ctl::before{content:"";position:absolute;left:16px;right:16px;top:0;height:2px;border-radius:2px;background:linear-gradient(90deg,#4da3ff,#a78bfa,#ff9f1a);opacity:.85;}
+  .chead{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .chead h2{margin:0;font-size:17px;letter-spacing:.02em;} #ctlBadge{font-size:11px;color:var(--sub);flex:1;}
+  #menu .chead{position:sticky;top:-14px;z-index:2;background:var(--card);margin:-14px 0 4px;padding:12px 0 8px;}
+  .chead button{background:var(--card2);border:1px solid var(--line);border-radius:8px;width:32px;height:32px;padding:0;}
+  #ctlTabs{display:flex;gap:6px;margin-bottom:12px;overflow:auto;}
+  #ctlTabs button{flex:1 1 auto;padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:#0f1624;font-size:13px;color:var(--sub);white-space:nowrap;}
+  #ctlTabs button.on{color:#fff;border-color:#4da3ff;background:linear-gradient(135deg,#2b6fd6aa,#6d4fd6aa);box-shadow:0 0 14px #4da3ff55;}
+  .cblock{margin-bottom:14px;} .ctitle{font-size:12px;color:var(--sub);letter-spacing:.06em;margin-bottom:6px;} .ctitle span{color:#7fb6ff;margin-left:6px;letter-spacing:0;}
+  .seg{display:flex;flex-wrap:wrap;gap:6px;}
+  .seg button{flex:1 1 56px;padding:10px 4px;border-radius:10px;border:1px solid var(--line);background:#111a2b;font-size:14px;font-weight:600;line-height:1.2;transition:.15s;}
+  .seg button small{display:block;font-size:10px;font-weight:400;color:var(--sub);margin-top:2px;}
+  .seg button:active{transform:scale(.96);}
+  .seg button.on{border-color:#4da3ff;background:linear-gradient(135deg,#1f4f9a,#3a2f8f);color:#fff;box-shadow:0 0 12px #4da3ff66,inset 0 0 8px #4da3ff33;}
+  .seg button:disabled{opacity:.38;pointer-events:none;}
+  .tswitch{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:#0f1624;margin-bottom:14px;}
+  .tswitch b{font-size:17px;display:block;} .tswitch small{color:var(--sub);font-size:12px;} .tswitch>div{flex:1;}
+  .tswitch button{padding:10px 18px;border-radius:10px;border:none;font-weight:700;background:linear-gradient(135deg,#34d399,#10b981);color:#04281c;}
+  .tswitch:not(.on) button{background:linear-gradient(135deg,#4da3ff,#2b6fd6);color:#fff;}
+  .tswitch.on{border-color:#34d39977;box-shadow:0 0 16px #34d39933;}
+  .dotp{width:12px;height:12px;border-radius:50%;background:#556;flex:none;} .tswitch.on .dotp{background:#34d399;animation:pl 1.6s infinite;}
+  @keyframes pl{0%{box-shadow:0 0 0 0 #34d39988}70%{box-shadow:0 0 0 10px #34d39900}100%{box-shadow:0 0 0 0 #34d39900}}
+  .kvbox{border:1px solid var(--line);border-radius:12px;background:#0f1624;padding:4px 12px;margin-bottom:10px;}
+  .kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1c2638;font-size:14px;} .kv:last-child{border:none;}
+  .kv span{color:var(--sub);} .kv b.w{color:var(--warn);}
+  .agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+  .agrid button{padding:12px 4px;border-radius:12px;border:1px solid var(--line);background:#111a2b;font-size:14px;font-weight:600;line-height:1.25;}
+  .agrid button small{display:block;font-size:10px;font-weight:400;color:var(--sub);margin-top:3px;}
+  .agrid button:active{transform:scale(.96);} .agrid button:disabled{opacity:.35;pointer-events:none;}
+  .agrid button.danger{border-color:#7a4a2a;background:linear-gradient(135deg,#2a1a10,#1b1420);color:#ffc9a0;}
+  .agrid:last-of-type{grid-template-columns:1fr 1fr;}
+  .agrid.two{grid-template-columns:1fr 1fr;} .agrid.one{grid-template-columns:1fr;}
+  .nrow{display:flex;gap:8px;} .nrow input{flex:1;background:#111a2b;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px;font-size:16px;text-align:center;}
+  .nrow button.safe{background:linear-gradient(135deg,#1f6f55,#157a5c);padding:6px 10px;font-size:13px;line-height:1.2;}
+  .nrow button.safe small{display:block;font-size:10px;font-weight:400;opacity:.85;}
+  .nrow button{padding:10px 20px;border-radius:10px;border:none;font-weight:700;background:linear-gradient(135deg,#4da3ff,#2b6fd6);color:#fff;}
+  .mcard{border:1px solid var(--line);border-radius:12px;background:#0f1624;padding:10px 12px;margin-bottom:12px;}
+  .mrow{display:flex;align-items:center;gap:10px;margin:8px 0;} .mrow span{flex:1;font-size:13px;color:var(--sub);}
+  .mrow input,.mrow select{width:150px;background:#111a2b;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px;font-size:15px;text-align:center;}
+  .autoscale{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt);margin:2px 2px 10px;} .autoscale input{width:18px;height:18px;}
+  button.wide{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#111a2b;font-weight:600;font-size:14px;margin-bottom:10px;}
+  button.wide small{display:block;font-size:10px;font-weight:400;color:var(--sub);margin-top:3px;}
+  .nrow button small{display:block;font-size:10px;font-weight:400;opacity:.85;}
+  .nrow button.danger2{background:linear-gradient(135deg,#2a1a10,#1b1420);border:1px solid #7a4a2a;color:#ffc9a0;padding:8px 10px;font-size:13px;line-height:1.2;}
+  #menu .sec{border:1px solid var(--line);border-radius:12px;background:#0f1624;padding:6px 14px 14px;margin-top:16px;}
+  #menu .sec.gap-lg{margin-top:34px;}
+  #menu .sec h3{margin:8px 0 6px;font-size:13px;color:#9fc4ff;letter-spacing:.06em;}
+  #menu .sec .sub{font-size:12px;line-height:1.6;}
+  #menu .mrow input{width:150px;} #menu .sub.hint{margin-top:4px;} #menu .sub.lead{margin-top:14px;color:var(--txt);font-weight:600;}
+  #menu .curloc{font-size:13px;margin:2px 0 6px;color:var(--sub);} #menu .curloc b{color:var(--txt);}
+  #menu .row.tight{margin-top:6px;} #menu .row.tight button{padding:9px 6px;font-size:14px;}
+  #menu .idrow{display:flex;align-items:center;gap:12px;} #menu .idrow .sub{flex:1;}
+  button.sm{flex:none;padding:6px 14px;border-radius:9px;border:1px solid var(--line);background:var(--card2);font-size:13px;font-weight:600;}
+  .cnote{font-size:12px;color:var(--sub);line-height:1.6;margin:6px 2px;}
+  #hud{position:fixed;left:10px;bottom:10px;max-width:calc(100% - 230px);font-size:11px;color:var(--sub);pointer-events:none;}
+
+  /* settings.html: the star chart panels laid out as a normal page */
+  html,body{overflow:auto;height:auto;background:var(--bg);}
+  body{padding:12px 12px 40px;}
+  .panel{position:static;display:block;border:1px solid var(--line);border-radius:16px;max-width:560px;margin:0 auto 14px;}
+  #ctl{max-height:none;}
+  #menu{max-height:none;overflow:visible;}
+  .ptop{max-width:560px;margin:0 auto 10px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);}
+  .ptop h1{font-size:18px;margin:0;color:var(--txt);flex:1;}
+  .ptop a{color:var(--accent);}
+  #minfo{position:static;white-space:normal;text-shadow:none;pointer-events:auto;font-size:12px;}
+  #toast{position:fixed;}
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="ptop"><span class="dot" id="dot"></span><h1>NS-4000 Settings<span style="font-size:13px;color:var(--sub);font-weight:500;margin-left:10px;white-space:nowrap">v1.0.0</span></h1><a href="/">Console</a><a href="/control.html">Control</a><a href="/starchart_en.html">Star Chart</a><a href="/files">File Manager</a></div>
+<div class="hidden"><span id="stt"></span><button id="bCtl"></button><button id="bBeep"></button></div>
+
+
+<div class="panel" id="extra">
+  <div class="chead"><h2>LUNA OnStepNinja NS-4000</h2><span id="exBadge" style="font-size:13px;color:var(--sub);flex:1;margin-left:2.5em"></span></div>
+  <div class="kvbox" id="exInfo"><div class="kv"><span>Loading…</span><b></b></div></div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0 4px">
+    <span style="font-size:13px;color:var(--sub)">GOTO base rate (100%)</span>
+    <input type="number" id="baseIn" step="0.01" min="0.001" max="20" style="width:6.5em;background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:6px">
+    <span style="font-size:13px">°/s</span>
+    <button id="baseSet" style="padding:6px 16px;border-radius:8px;border:1px solid var(--line);background:var(--card2)">Set</button>
+  </div>
+  <div class="cnote">Changes the base of the 5 GOTO speeds (50–200%) (:SX94). Saved in the mount and kept after power off. Setting it returns the GOTO speed to 100%.<br>
+  The firmware limits it so that 200% does not exceed the maximum step rate (then the value becomes slower than entered). Cannot be changed during a GOTO.</div>
+  <div class="cnote">When this page opens and the OnStep date and time are not set, this device’s clock is sent automatically (without the date and time after power-on, unpark and GOTO are refused).<br>
+  Mechanical settings (steps/degree, microsteps, reversal) <b>take effect after a power cycle (restart)</b>.</div>
+</div>
+
+<div class="panel show" id="ctl">
+  <div class="chead"><h2>Mount control</h2><span id="ctlBadge"></span></div>
+  <div id="ctlTabs"></div><div id="ctlBody"></div>
+</div>
+
+
+<div class="panel" id="menu">
+  <div class="chead"><h2>Settings (Config)</h2></div>
+  <div class="sec">
+    <h3>Connected mount</h3>
+    <div class="idrow"><button id="bIdent" class="sm">Identify</button><div class="sub" id="mountId">Not identified (checked automatically when connected)</div></div>
+  </div>
+
+  <div class="sec">
+    <h3>Site</h3>
+    <div class="curloc">Current: <b id="locNow"></b></div>
+    <div class="mrow"><span>Latitude<br><small>North + / South −</small></span><input type="number" id="lat" step="0.01"></div>
+    <div class="mrow"><span>Longitude<br><small>West + / East −</small></span><input type="number" id="lon" step="0.01"></div>
+    <div class="sub hint">Same convention as OnStep / NS-5000. Example: Tokyo → latitude +35.68 / longitude −139.77</div>
+    <div class="sub lead">Or fetch it</div>
+    <div class="row tight"><button id="bGps">📍 This device’s location</button><button id="bMountLoc">Read from mount</button></div>
+    <div class="sub lead">Send to the mount</div>
+    <div class="row tight"><button id="bSendLoc">Send site</button></div>
+  </div>
+
+  <div class="sec">
+    <h3>Date & time</h3>
+    <div class="sub">Sends this device’s (PC/phone) clock and time zone to the mount. After sending, check the mount info at the top left of the screen.</div>
+    <div class="row tight"><button id="bSendTime">Send date & time</button></div>
+  </div>
+
+    <div class="sub" id="saveSt" style="margin-top:12px;font-size:12px"></div>
+</div>
+
+
+<div class="panel" id="infoPanel">
+  <div class="chead"><h2>Mount information</h2></div>
+  <div id="minfo"></div>
+</div>
+
+<div class="cnote" style="text-align:center;max-width:560px;margin:0 auto">LUNA OnStepNinja NS-4000 · <a href="https://github.com/OnStepNinja" target="_blank" rel="noopener" style="color:var(--accent)">🌙 LUNA Project</a></div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+const D2R = Math.PI / 180, R2D = 180 / Math.PI;
+const BASE = (new URLSearchParams(location.search).get("host") || "");
+const API = BASE ? "http://" + BASE : "";
+
+
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem("sc_" + k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem("sc_" + k, JSON.stringify(v)); }catch(e){} }
+};
+const loc = store.get("loc", {lat: 35.68, lon: 139.77, src: "default"});
+const epoch = "now";
+
+const jdNow = () => Date.now() / 86400000 + 2440587.5;
+const norm = a => { a %= 360; return a < 0 ? a + 360 : a; };
+function lstDeg(jd){ return norm(280.46061837 + 360.98564736629 * (jd - 2451545) + loc.lon); }
+let LST = 0, JD = 0;
+function buildFrame(){ JD = jdNow(); LST = lstDeg(JD); }
+
+function fmtHMS(h){ h = ((h % 24) + 24) % 24; let H_ = Math.floor(h), m = Math.floor((h - H_) * 60), s = Math.round(((h - H_) * 60 - m) * 60);
+  if(s === 60){ s = 0; m++; } if(m === 60){ m = 0; H_ = (H_ + 1) % 24; }
+  return String(H_).padStart(2,"0") + ":" + String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0"); }
+function fmtDMS(d){ const sg = d < 0 ? "-" : "+"; d = Math.abs(d); let D_ = Math.floor(d), m = Math.floor((d - D_) * 60), s = Math.round(((d - D_) * 60 - m) * 60);
+  if(s === 60){ s = 0; m++; } if(m === 60){ m = 0; D_++; }
+  return sg + String(D_).padStart(2,"0") + ":" + String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0"); }
+const fmtLoc = () => Math.abs(loc.lat).toFixed(2) + "°" + (loc.lat >= 0 ? "N" : "S") + " " + Math.abs(loc.lon).toFixed(2) + "°" + (loc.lon >= 0 ? "E" : "W");
+function parseSex(str, hours){
+  const m = /([+-])?\s*(\d+)\D+(\d+)(?:\D+(\d+(?:\.\d+)?))?/.exec(String(str || ""));
+  if(!m) return null;
+  const v = (+m[2]) + (+m[3]) / 60 + (+(m[4] || 0)) / 3600;
+  return (m[1] === "-" ? -v : v) * (hours ? 15 : 1);
+}
+function toast(msg, err){ const t = $("toast"); t.textContent = msg; t.className = "show" + (err ? " err" : "");
+  clearTimeout(toast._t); toast._t = setTimeout(() => { t.className = ""; }, 2500); }
+
+async function api(path){
+  const ac = new AbortController(), t = setTimeout(() => ac.abort(), 4000);
+  try{
+    const r = await fetch(API + path, {cache: "no-store", signal: ac.signal});
+    const txt = await r.text();
+    if(!r.ok){ let m = ""; try{ m = (JSON.parse(txt).message || "").trim(); }catch(e){} throw new Error(m || "HTTP " + r.status); }
+    try{ return JSON.parse(txt); }catch(e){ throw new Error("Invalid JSON: " + txt.slice(0, 60)); }
+  }catch(e){ throw new Error(e.name === "AbortError" ? "Timeout" : e.message); }
+  finally{ clearTimeout(t); }
+}
+
+async function askv(c){ try{ const j = await api("/api/command?cmd=" + encodeURIComponent(c)); const v = String(j.data ?? "").replace(/#/g, "").trim(); return v || null; }catch(e){ return null; } }
+async function ask(c){ try{ const j = await api("/api/command?cmd=" + encodeURIComponent(c)); const v = String(j.data ?? "").replace(/#/g, "").trim(); return v && v !== "0" ? v : null; }catch(e){ return null; } }
+let infoBusy = false, mc = null, mcStatic = null, infoN = 0;
+let mount = {type: null, name: "", ver: "", date: "", raw: ""}, identifying = false;
+
+
+function kindWord(t){ const k = mount && mount.kind; return k === "indi" || k === "nina" ? t.replace(/Alpaca( \/ ASCOM)?/g, k === "nina" ? "NINA" : "INDI") : t; }
+async function getHostInfo(){ try{ const r = await fetch(API + "/api/host", {cache: "no-store"}); return r.ok ? await r.json() : null; }catch(e){ return null; } }
+let gcache = null, gAt = 0;
+async function ginfo(){ try{ const j = await api("/api/mount/info"); gcache = j; gAt = Date.now(); return j; }catch(e){ return null; } }
+const TRACK_NAMES = {0: "Sidereal", 1: "Moon", 2: "Sun", 3: "King"};
+
+async function identify(manual){
+  if(identifying) return; identifying = true;
+  const box = $("mountId"); if(manual) box.textContent = "Identifying…";
+  try{
+    const hi = await getHostInfo();
+    if(hi && (hi.backend === "alpaca" || hi.backend === "indi" || hi.backend === "nina")){
+      const gi = await ginfo();
+      mount = {type: "generic", kind: hi.backend, name: gi ? gi.name : "Alpaca", ver: hi.backend === "indi" ? "INDI" : hi.backend === "nina" ? "NINA" : "Alpaca", date: "", raw: gi ? gi.name : "Alpaca"};
+    }else{
+    const gvp = await ask("GVP"), gvn = await ask("GVN"), gvd = await ask("GVD");
+    const clean = t => (t || "").replace(/[^ -~]/g, "").trim();
+    if(/on-?step/i.test(gvp || "")){
+      mount = {type: "onstep", name: "OnStep", ver: clean(gvn), date: clean(gvd), raw: clean(gvp)};
+    }else{
+      const nv = await ask("=V"), np = await ask("=GVP"), nn = await ask("=GVN");
+      if(/ns-?5000/i.test((nv || "") + (np || ""))) mount = {type: "ns5000", name: "NS-5000", ver: clean(nn) || (/Ver([\d.]+)/.exec(nv || "") || [])[1] || "", date: "", raw: clean(nv)};
+      else mount = {type: "unknown", name: gvp ? "LX200-compatible (" + clean(gvp) + ")" : "No response", ver: clean(gvn), date: "", raw: clean(gvp)};
+    }
+    }
+  }catch(e){ mount = {type: "unknown", name: "Identification failed", ver: "", date: "", raw: String(e.message)}; }
+  identifying = false; mcStatic = null; infoN = 0;
+  const t = mount.type === "onstep" ? "OnStep" : mount.type === "ns5000" ? "NS-5000" : mount.type === "generic" ? kindWord("Generic (Alpaca)") : "Unknown";
+  box.innerHTML = "Model: <b style='color:var(--txt)'>" + t + "</b><br>Name: " + (mount.raw || mount.name) + (mount.ver ? "<br>Version: " + mount.ver : "") + (mount.date ? "<br>Build date: " + mount.date : "");
+  if(manual) toast("Model: " + t + (mount.ver ? " " + mount.ver : ""));
+  $("bCtl").style.display = mount.type === "onstep" || mount.type === "ns5000" || mount.type === "generic" ? "" : "none";
+  $("bBeep").style.display = mount.type === "generic" ? "none" : "";
+  if(mount.type === "generic" && loc.src === "default") mountLocation(true);
+  infoPoll();
+}
+const parseSite = str => { const m = /([+-]?)(\d+)\D+(\d+)/.exec(str || ""); return m ? (m[1] === "-" ? -1 : 1) * (+m[2] + (+m[3]) / 60) : null; };
+const fmtSite = (lat, lon) => Math.abs(lat).toFixed(2) + "°" + (lat >= 0 ? "N" : "S") + " " + Math.abs(lon).toFixed(2) + "°" + (lon >= 0 ? "E" : "W");
+const hms = ms => new Date(ms).toISOString().replace("T", " ").slice(0, 19);
+const fmtDiff = d => { const ad = Math.abs(d), t = ad < 120 ? d.toFixed(0) + "s" : ad < 7200 ? (d / 60).toFixed(1) + " min" : ad < 172800 ? (d / 3600).toFixed(1) + " h" : (d / 86400).toFixed(0) + " d"; return (d >= 0 ? "+" : "") + t; };
+
+
+const kept = {};
+async function fetchKeep(c, fn){
+  const v = await fn(c);
+  if(v !== null && v !== undefined){ kept[c] = {v, t: Date.now()}; return {v, t: kept[c].t, fresh: true}; }
+  const k = kept[c];
+  if(k && Date.now() - k.t < 180000) return {v: k.v, t: k.t, fresh: false};
+  return null;
+}
+async function infoPoll(){
+  if(infoBusy || !$("dot").classList.contains("on")) return; infoBusy = true;
+  if(mount.type === "generic"){ await ginfo(); infoBusy = false; mc = {generic: true, r: {}, t: {}, t0: Date.now(), reused: 0}; renderInfo(); return; }
+  const os = mount.type === "onstep";
+  const slewing = /slew|move/i.test($("stt").textContent);
+  const list = slewing && os ? ["GU"] : os ? ["GC", "GL", "GS", "GU", "GT", "GA", "GZ", "Gm"] : ["GC", "GL", "GS", "GA", "GZ"];
+  const r = {}, t = {}; let reused = 0;
+  for(const c of ["GC", "GL", "GS", "GU", "GT", "GA", "GZ", "Gm"]){
+    if(!list.includes(c)){ if(kept[c]){ r[c] = kept[c].v; t[c] = kept[c].t; } continue; }
+    const x = await fetchKeep(c, ask); if(x){ r[c] = x.v; t[c] = x.t; if(!x.fresh && Date.now() - x.t > 20000) reused++; }
+  }
+  if(!slewing && (!mcStatic || ++infoN % 10 === 0)){
+    const q = {}; for(const c of os ? ["GG", "Gt", "Gg", "Gh", "Go", "GXE9", "GXEA"] : ["GG", "Gt", "Gg"]){
+      const x = await fetchKeep(c, (c === "GXE9" || c === "GXEA") ? askv : ask); if(x) q[c] = x.v;
+    }
+    mcStatic = q;
+  }
+  infoBusy = false;
+  mc = {r: Object.assign({}, mcStatic, r), t, t0: Date.now(), reused}; renderInfo();
+}
+function renderGeneric(){
+  const g = gcache; if(!g || !g.state){ $("minfo").innerHTML = ""; return; }
+  buildFrame(); const s = g.state, caps = g.caps || {}, L = [], row = (k, v, who, cls) => L.push("<b>" + k + "</b><span" + (cls ? " class='" + cls + "'" : "") + ">" + v + "</span> <span class='who'>" + who + "</span>");
+  const el = (Date.now() - gAt) / 1000;
+  if(s.haveSite){
+    const diff = Math.abs(s.siteLat - loc.lat) > 0.05 || Math.abs(s.siteLon - loc.lon) > 0.05;
+    row("Site", fmtSite(s.siteLat, s.siteLon), "(mount)"); row("", fmtLoc(), "(PC · " + ({mount: "from mount", gps: "GPS", manual: "manual", default: "default"}[loc.src] || loc.src) + ")", diff ? "w" : "");
+  }
+  if(s.utc){
+    const mUtc = Date.parse(s.utc) + el * 1000, pcUtc = Date.now(), d = (mUtc - pcUtc) / 1000, pcEast = -new Date().getTimezoneOffset() / 60;
+    row("UTC", hms(mUtc), "(mount)"); row("", hms(pcUtc), "(PC UTC" + (pcEast >= 0 ? "+" : "") + pcEast + ")");
+    row("Clock diff", fmtDiff(d), "(mount − PC)", Math.abs(d) > 60 ? "w" : "");
+  }
+  if(typeof s.lst === "number"){
+    const mLst = norm(s.lst * 15 + el * 1.0027379 / 240), dd = ((mLst - LST + 540) % 360 - 180) / 15 * 3600;
+    row("Local sidereal time", fmtHMS(mLst / 15), "(mount)"); row("", fmtHMS(LST / 15), "(PC calc.)");
+    row("LST diff", (dd >= 0 ? "+" : "") + dd.toFixed(0) + "s", "(mount − PC)", Math.abs(dd) > 10 ? "w" : "");
+  }
+  row("Alt / Az", s.alt.toFixed(1) + "° / " + s.az.toFixed(1) + "°", "(mount)");
+  L.push("&nbsp;"); L.push("<b style='color:var(--accent)'>" + kindWord("Generic (Alpaca)") + "</b> " + (g.name || ""));
+  row("Tracking", (s.tracking ? "ON " + (TRACK_NAMES[s.trackingRate] || "") : "OFF") + (s.slewing ? "  slewing" : ""), "", s.tracking ? "" : "w");
+  if(caps.canPark || s.atPark) row("Park", s.atPark ? "Parked" : "Not parked" + (s.atHome ? " / at home" : ""), "");
+  if(s.pierSide === 0 || s.pierSide === 1) row("Pier side", s.pierSide === 0 ? "East" : "West", "");
+  if(g.error) L.push("<span class='w'>Mount communication error: " + g.error + "</span>");
+  $("minfo").innerHTML = "<div>" + L.join("</div><div>") + "</div>";
+}
+function renderInfo(){
+  if(!mc){ return; }
+  if(mc.generic){ renderGeneric(); return; }
+  const r = mc.r, elT = (Date.now() - (mc.t.GL || mc.t0)) / 1000, elS = (Date.now() - (mc.t.GS || mc.t0)) / 1000;
+  buildFrame(); const L = [], row = (k, v, who, cls) => L.push("<b>" + k + "</b><span" + (cls ? " class='" + cls + "'" : "") + ">" + v + "</span> <span class='who'>" + who + "</span>");
+
+  const mlat = parseSite(r.Gt), mlonW = parseSite(r.Gg), mlon = mlonW === null ? null : -mlonW;
+  const siteOk = mlat !== null && mlon !== null && !(mlat === 0 && mlon === 0);
+  const siteDiff = siteOk && (Math.abs(mlat - loc.lat) > 0.05 || Math.abs(mlon - loc.lon) > 0.05);
+  row("Site", siteOk ? fmtSite(mlat, mlon) : "--", "(mount)");
+  row("", fmtLoc(), "(PC · " + ({mount: "from mount", gps: "GPS", manual: "manual", default: "default"}[loc.src] || loc.src) + ")", siteDiff ? "w" : "");
+
+  const dm = /(\d+)\/(\d+)\/(\d+)/.exec(r.GC || ""), tm = /(\d+):(\d+):(\d+)/.exec(r.GL || "");
+  const pcLocalMs = Date.now() - new Date().getTimezoneOffset() * 60000, pcEast = -new Date().getTimezoneOffset() / 60;
+  if(dm && tm){
+    const gg = parseFloat(r.GG), eastExp = Math.round(loc.lon / 15);
+    const mLocal = Date.UTC(2000 + +dm[3], +dm[1] - 1, +dm[2], +tm[1], +tm[2], +tm[3]) + elT * 1000;
+
+    let east = eastExp, note = "", warn = false;
+    if(!isNaN(gg)){
+      const flipped = Math.abs(gg - eastExp) < Math.abs(gg + eastExp);
+      east = flipped ? gg : -gg;
+      if(Math.abs(east - eastExp) > 1.5){ warn = true; note = "(longitude implies UTC" + (eastExp >= 0 ? "+" : "") + eastExp + " – mismatch)"; east = eastExp; }
+      else note = flipped ? "(sign flipped → corrected)" : "(LX200 convention)";
+    }
+    const mUtc = mLocal - east * 3600000, pcUtc = Date.now();
+    row("Local", hms(mLocal), "(mount)"); row("", hms(pcLocalMs), "(PC)");
+    row("UTC", hms(mUtc), "(mount UTC" + (east >= 0 ? "+" : "") + east + ")"); row("", hms(pcUtc), "(PC UTC" + (pcEast >= 0 ? "+" : "") + pcEast + ")");
+    const d = (mUtc - pcUtc) / 1000; row("Clock diff", fmtDiff(d), "(mount − PC)", Math.abs(d) > 60 ? "w" : "");
+    if(!isNaN(gg)) row("Time zone :GG", (gg >= 0 ? "+" : "") + gg, note, warn ? "w" : "");
+  }else row("Local", "--", "(mount)");
+
+  const ls = parseSex(r.GS, true);
+  if(ls !== null){
+    const mLst = norm(ls + elS * 1.0027379 / 240), dd = ((mLst - LST + 540) % 360 - 180) / 15 * 3600;
+    row("Local sidereal time", fmtHMS(mLst / 15), "(mount)"); row("", fmtHMS(LST / 15), "(PC calc.)");
+    row("LST diff", (dd >= 0 ? "+" : "") + dd.toFixed(0) + "s", "(mount − PC)", Math.abs(dd) > 10 ? "w" : "");
+  }else row("Local sidereal time", "--", "(mount)");
+  if(r.GA || r.GZ){ const a = parseSex(r.GA, false), z = parseSex(r.GZ, false);
+    row("Alt / Az", (a === null ? "--" : a.toFixed(1) + "°") + " / " + (z === null ? "--" : z.toFixed(1) + "°"), "(mount)"); }
+
+  if(mount.type === "onstep"){
+    L.push("&nbsp;"); L.push("<b style='color:var(--accent)'>OnStep</b> " + (mount.ver || "") + (mount.date ? " (" + mount.date + ")" : ""));
+    const gu = r.GU || "";
+    if(/^[A-Za-z]+[0-9]*$/.test(gu) && /[EKA]/.test(gu)){
+      const ti = gu.search(/[EKA]/), fl = gu.slice(0, ti), hz = parseFloat(r.GT);
+      const tracking = !fl.includes("n"), park = {p: "Not parked", P: "Parked", I: "Parking", F: "Park failed"}[(fl.match(/[pPIF]/) || ["p"])[0]];
+      const rate = !tracking ? "" : isNaN(hz) || hz === 0 ? "" : (() => { const n = trackName(hz); return n ? " " + TRACK_RATES.find(t => t[0] === n)[1] : " " + hz.toFixed(3) + "Hz"; })();
+      row("Tracking", (tracking ? "ON" : "OFF") + rate + (fl.includes("N") ? "" : "  slewing"), "", tracking ? "" : "w");
+      row("Park", park + (fl.includes("H") ? " / at home" : ""), "", park === "Park failed" ? "w" : "");
+      if(gu.charAt(ti) === "E") row("Auto flip", fl.includes("a") ? "ON" : "OFF", "");
+      const pier = gu.charAt(ti + 1); if(pier === "T" || pier === "W" || pier === "o") row("Pier side", {T: "East", W: "West", o: "None"}[pier], "");
+    }
+    const h = parseInt(r.Gh), o = parseInt(r.Go);
+    if(!isNaN(h) && !isNaN(o)) row("Altitude limits", (h >= 0 ? "+" : "") + h + "° to +" + o + "°", "(min to max)");
+    const me = parseInt(r.GXE9), mw = parseInt(r.GXEA);
+    if(!isNaN(me) && !isNaN(mw)) row("Meridian limit", "E " + (me / 4).toFixed(1) + "° W " + (mw / 4).toFixed(1) + "°", "(" + me + " min / " + mw + " min)");
+  }else if(mount.type === "ns5000"){
+    L.push("&nbsp;"); L.push("<b style='color:var(--accent)'>NS-5000</b> Ver" + (mount.ver || "?"));
+    L.push("<span class='who'>NS-5000-specific info is not supported yet</span>");
+  }else if(mount.type === "unknown"){
+    L.push("&nbsp;"); L.push("<span class='who'>Unknown mount (⚙️ Settings → Identify)</span>");
+  }
+  if(mc.reused) L.push("<span class='w'>Unstable link: some values are from the last successful read</span>");
+  $("minfo").innerHTML = "<div>" + L.join("</div><div>") + "</div>";
+}
+
+
+
+const CTL_TABS = [["speed", "Speed"], ["track", "Tracking"], ["pos", "Park/Home"], ["lim", "Limits"], ["mech", "Mechanics"]];
+let ctlTab = "speed", ctlR = null, ctlBusy = false;
+const ctlDraft = {};
+const GOTO_PRESETS = [[1, "200%", "fastest"], [2, "150%", ""], [3, "100%", "standard"], [4, "75%", ""], [5, "50%", "slowest"]];
+const MOVE_RATES = [["0", "0.25×"], ["1", "0.5×"], ["2", "1×"], ["3", "2×"], ["4", "4×"], ["5", "8×"], ["6", "20×"], ["7", "48×"], ["8", "Max/2"], ["9", "Max"]];
+const TRACK_RATES = [["TQ", "Sidereal", 60.164, 0.014], ["TL", "Lunar", 57.9, 0.3], ["TS", "Solar", 60.0, 0.05], ["TK", "King", 60.136, 0.014]];
+function parseGU(gu){
+  if(!/^[A-Za-z]+[0-9]*$/.test(gu || "") || !/[EKA]/.test(gu)) return null;
+  const ti = gu.search(/[EKA]/), fl = gu.slice(0, ti), tail = gu.slice(ti + 1), dg = (tail.match(/\d+$/) || [""])[0];
+  return {tracking: !fl.includes("n"), slewing: !fl.includes("N"), park: (fl.match(/[pPIF]/) || ["p"])[0], home: fl.includes("H"), autoflip: fl.includes("a"),
+    type: gu.charAt(ti), pier: tail.charAt(0), guideRate: dg.length >= 2 ? dg.charAt(dg.length - 2) : null};
+}
+const SID_DPS = 15.0410686 / 3600;
+const spdTxt = x => x >= 100 ? x.toFixed(0) : x.toFixed(1);
+const trackName = hz => { let best = null, bd = Infinity; for(const x of TRACK_RATES){ const d = Math.abs(hz - x[2]); if(d < x[3] && d < bd){ best = x[0]; bd = d; } } return best; };
+async function ctlRead(){
+  if(ctlBusy) return; ctlBusy = true;
+  if(mount.type === "generic"){ await ginfo(); ctlBusy = false; ctlR = {r: {}, g: null}; renderCtl(); return; }
+  const r = {}; for(const c of ["GU", "GT", "GX92", "GX93", "Gh", "Go", "GXE9", "GXEA", "GX95", "GX96", "GXE4", "GXE5", "GXA1", "GXA2"]) r[c] = (c === "GXE9" || c === "GXEA" || c === "GX95") ? await askv(c) : await ask(c);
+  ctlBusy = false; ctlR = {r, g: parseGU(r.GU)}; renderCtl();
+}
+function el(tag, cls, html){ const e = document.createElement(tag); if(cls) e.className = cls; if(html !== undefined) e.innerHTML = html; return e; }
+function segRow(title, note, items, activeKey, fn, disabled){
+  const wrap = el("div", "cblock"); wrap.append(el("div", "ctitle", title + (note ? " <span>" + note + "</span>" : "")));
+  const row = el("div", "seg");
+  items.forEach(it => { const b = el("button", (String(it[0]) === String(activeKey) ? "on" : ""), it[1] + (it[2] ? "<small>" + it[2] + "</small>" : "")); b.disabled = !!disabled; b.onclick = () => fn(it[0]); row.append(b); });
+  wrap.append(row); return wrap;
+}
+function kv(k, v, cls){ return "<div class='kv'><span>" + k + "</span><b class='" + (cls || "") + "'>" + v + "</b></div>"; }
+function renderGenericCtl(body){
+  const g = gcache; if(!g || !g.state){ body.append(el("div", "cnote", "Reading mount state…")); return; }
+  const s = g.state, caps = g.caps || {}, call = (op, label, okMsg) => ctlDo(label, async () => { await api("/api/mount/" + op); toast(okMsg); });
+  const sw = el("div", "tswitch " + (s.tracking ? "on" : ""), "<span class='dotp'></span><div><b>Tracking " + (s.tracking ? "ON" : "OFF") + "</b><small>" + (s.tracking ? (TRACK_NAMES[s.trackingRate] || "") : "Stopped") + (s.slewing ? " · slewing" : "") + "</small></div>");
+  const tb = el("button", "", s.tracking ? "Stop" : "Start"); tb.disabled = !caps.canSetTracking; tb.onclick = () => call("tracking?on=" + (s.tracking ? 0 : 1), "Tracking", "Tracking " + (s.tracking ? "OFF" : "ON")); sw.append(tb); body.append(sw);
+  const rates = (caps.trackingRates || []).filter(n => TRACK_NAMES[n]);
+  if(rates.length > 1) body.append(segRow("Tracking rate", "", rates.map(n => [String(n), TRACK_NAMES[n]]), String(s.trackingRate), n => call("trackingrate?rate=" + n, "Tracking rate", "Tracking rate → " + TRACK_NAMES[n]), !s.tracking));
+  const pc = el("div", "mcard"); pc.append(el("div", "ctitle", "Park / at home <span>mount features</span>"));
+  pc.append(el("div", "kvbox", kv("Park", s.atPark ? "Parked" : "Not parked") + kv("Home position", s.atHome ? "At home" : "—")));
+  const grid = el("div", "agrid"), busy = s.slewing;
+  const mk = (label, sub, fn, dis) => { const b = el("button", "", label + "<small>" + sub + "</small>"); b.disabled = !!dis; b.onclick = fn; grid.append(b); };
+  mk("Park", "Move to the park position", () => call("park", "Park", "Parking started"), !caps.canPark || s.atPark || busy);
+  mk("Unpark", "Resume operation", () => call("unpark", "Unpark", "Unpark"), !caps.canUnpark || !s.atPark);
+  mk("Go home", "Go to home", () => call("home", "Go to home", "Moving to home"), !caps.canFindHome || s.atPark || busy);
+  pc.append(grid); body.append(pc);
+  body.append(el("div", "cnote", "In generic mode (Alpaca / ASCOM) the basic functions are available: slew, stop, align, park, tracking and so on. Set GOTO speed, altitude limits and similar options in the mount’s driver.<br>Buttons for features this mount does not support are disabled."));
+}
+function renderCtl(){
+  const body = $("ctlBody"), g = ctlR && ctlR.g, r = ctlR ? ctlR.r : {};
+  $("ctlTabs").style.display = mount.type === "generic" ? "none" : "";
+  if(mount.type === "generic"){ body.innerHTML = ""; $("ctlBadge").textContent = kindWord("Generic (Alpaca) · ") + (mount.name || ""); renderGenericCtl(body); return; }
+  document.querySelectorAll("#ctlTabs button").forEach(b => b.classList.toggle("on", b.dataset.k === ctlTab));
+  body.innerHTML = "";
+  $("ctlBadge").textContent = mount.type === "onstep" ? "OnStep " + (mount.ver || "") + (g ? (g.type === "E" ? " · Equatorial (GEM)" : g.type === "K" ? " · Fork" : " · Alt-Az") : "") : mount.type === "ns5000" ? "NS-5000 Ver" + (mount.ver || "") : "Not identified";
+  if(mount.type !== "onstep"){ body.append(el("div", "cnote", mount.type === "ns5000" ? "NS-5000 controls are not supported yet.<br>You can send date/time and site from ⚙️ Settings." : "Mount not identified. Press “Identify” in ⚙️ Settings.")); return; }
+  if(!g){ body.append(el("div", "cnote", "Reading mount state…")); return; }
+  const hz = parseFloat(r.GT), base = parseFloat(r.GX93), cur = parseFloat(r.GX92);
+  if(ctlTab === "speed"){
+    const pct = base > 0 && cur > 0 ? base / cur * 100 : null, near = pct === null ? null : [200, 150, 100, 75, 50].reduce((a, b) => Math.abs(b - pct) < Math.abs(a - pct) ? b : a);
+    const sd = parseFloat(r.GXE4), baseDps = base > 0 && sd > 0 ? 1e6 / (base * sd) : null;
+    const presets = GOTO_PRESETS.map(p => [p[0], p[1], baseDps ? "≈" + spdTxt(baseDps * parseInt(p[1]) / 100 / SID_DPS) + "× " + p[2] : p[2]]);
+    const nowTxt = pct === null ? "" : "Now " + pct.toFixed(0) + "%" + (baseDps ? " ≈" + spdTxt(baseDps * pct / 100 / SID_DPS) + "× (" + (baseDps * pct / 100).toFixed(2) + "°/s)" : "");
+    body.append(segRow("GOTO speed", nowTxt, presets, near === null ? null : GOTO_PRESETS.find(p => parseInt(p[1]) === near)[0], setGotoSpeed, g.slewing));
+    if(baseDps) body.append(el("div", "cnote", "× is the multiple of the sidereal rate (15.04″/s). Calculated from the RA axis steps/deg " + sd + "."));
+    if(g.slewing) body.append(el("div", "cnote", "GOTO speed can’t be changed while slewing."));
+    body.append(segRow("Manual move speed", g.guideRate === null ? "" : "Now " + (MOVE_RATES[g.guideRate] ? MOVE_RATES[g.guideRate][1] : "?"), MOVE_RATES, g.guideRate, setMoveRate));
+  }else if(ctlTab === "track"){
+    const sd = parseFloat(r.GXE4), pps = !isNaN(hz) && hz > 0 && sd > 0 ? sd * hz / 14400 : null;
+    const nm = trackName(hz), sub = !g.tracking ? "Stopped" : (nm ? TRACK_RATES.find(t => t[0] === nm)[1] : "Custom rate") + (pps ? " · " + pps.toFixed(1) + " pps (RA)" : "") + (g.slewing ? " · slewing" : "");
+    const sw = el("div", "tswitch " + (g.tracking ? "on" : ""), "<span class='dotp'></span><div><b>Tracking " + (g.tracking ? "ON" : "OFF") + "</b><small>" + sub + "</small></div>");
+    const tb = el("button", "", g.tracking ? "Stop" : "Start"); tb.onclick = () => setTracking(!g.tracking); sw.append(tb); body.append(sw);
+    body.append(segRow("Tracking rate", pps ? pps.toFixed(1) + " pps (RA)" : "", TRACK_RATES.map(t => [t[0], t[1]]), nm, setTrackRate, !g.tracking));
+    const fine = el("div", "cblock"); fine.append(el("div", "ctitle", "Sidereal clock fine adjust <span>Saved to EEPROM</span>"));
+    const fr = el("div", "seg"); [["T-", "−0.02Hz"], ["TR", "Reset"], ["T+", "+0.02Hz"]].forEach(([c, t]) => { const b = el("button", "", t); b.onclick = () => fineTrack(c); fr.append(b); }); fine.append(fr); body.append(fine);
+  }else if(ctlTab === "pos"){
+    body.append(el("div", "kvbox", kv("Park", {p: "Not parked", P: "Parked", I: "Parking", F: "Park failed"}[g.park], g.park === "F" ? "w" : "") + kv("Home position", g.home ? "At home" : "—") + kv("Pier side", {T: "East", W: "West", o: "None"}[g.pier] || "?")));
+    const parked = g.park === "P", busy = g.slewing || g.park === "I";
+    const mk = (grid, label, sub, fn, dis, cls) => { const b = el("button", cls || "", label + "<small>" + sub + "</small>"); b.disabled = !!dis; b.onclick = fn; grid.append(b); };
+
+    const hc = el("div", "mcard"); hc.append(el("div", "ctitle", "Home <span>reference orientation (polar)</span>"));
+    const hg = el("div", "agrid two");
+    mk(hg, "Reset to home", "Initialize coordinates as “at home now”", () => posAct("hF"), parked || busy, "danger");
+    mk(hg, "Go to home", "Return to home position", () => posAct("hC"), parked || busy);
+    hc.append(hg, el("div", "cnote", "<b>The home position is fixed</b> (toward the north celestial pole; for a GEM the counterweight points down).<br><br><b>How to use “Reset to home”</b><br>① Manually point the telescope at the north celestial pole, counterweight down<br>② Press “Reset to home” → the mount initializes its coordinates as “I am at home now” (the chart marker also moves to the pole; alignment is also reset)<br>③ Later, “Go to home” brings the mount back to home<br><br><b>If the telescope is not at the home orientation when you press it, the coordinates will no longer match the real direction.</b>"));
+    body.append(hc);
+
+    const pc = el("div", "mcard"); pc.append(el("div", "ctitle", "Park <span>rest position</span>"));
+    const pg = el("div", "agrid two");
+    mk(pg, "Set park position", "Use current direction as park", () => posAct("hQ"), parked || busy, "danger");
+    mk(pg, "Park", "Go to park position and stop", () => posAct("hP"), parked || busy);
+    pc.append(pg);
+    const pg2 = el("div", "agrid one"); mk(pg2, "Unpark", "Resume operation (tracking enabled)", () => posAct("hR"), !parked); pc.append(pg2);
+    pc.append(el("div", "cnote", "<b>How to use Park</b><br>① Point the telescope at the direction you want to park, then “Set park position”<br>② When observing is finished, press “Park” (moves to the park position and stops)<br>③ Next time, start with “Unpark”"));
+    body.append(pc);
+    if(busy) body.append(el("div", "cnote", "Not available while slewing or parking."));
+  }else if(ctlTab === "lim"){
+    const h = parseInt(r.Gh), o = parseInt(r.Go), me = parseInt(r.GXE9), mw = parseInt(r.GXEA), gem = g.type === "E";
+    body.append(numRow("Altitude min", "−30 to +30°. The mount will not slew below this altitude", h, -30, 30, 1, "°", v => limSet("Altitude min", "Sh" + (v < 0 ? "-" : "+") + String(Math.abs(v)).padStart(2, "0"), h, v, "°", "Gh")));
+    body.append(numRow("Altitude max", "60 to 90°. The mount will not slew above this altitude", o, 60, 90, 1, "°", v => limSet("Altitude max", "So" + String(v).padStart(2, "0"), o, v, "°", "Go")));
+    if(gem){
+      body.append(numRow("Meridian limit E", "minutes (4 min = 1°). Use a multiple of 4. How far past the meridian to track on the east side", me, -720, 720, 4, " min", v => limSet("Meridian limit E", "SXE9," + v, me, v, " min", "GXE9"), 0));
+      body.append(numRow("Meridian limit W", "minutes (4 min = 1°). Use a multiple of 4. How far past the meridian to track on the west side", mw, -720, 720, 4, " min", v => limSet("Meridian limit W", "SXEA," + v, mw, v, " min", "GXEA"), 0));
+      body.append(segRow("Auto flip", "", [["1", "ON"], ["0", "OFF"]], g.autoflip ? "1" : "0", v => limSet("Auto flip", "SX95," + v, g.autoflip ? "ON" : "OFF", v === "1" ? "ON" : "OFF", "", null)));
+      body.append(segRow("Preferred side", "Which side to use when slewing", [["E", "East"], ["B", "Best"], ["W", "West"]], r.GX96, v => limSet("Preferred side", "SX96," + v, {E: "East", W: "West", B: "Best"}[r.GX96] || "?", {E: "East", W: "West", B: "Best"}[v], "", "GX96")));
+      body.append(el("div", "cnote", "<b>0</b> means: no slewing or tracking past the meridian (fewer unexpected moves). Tracking stops when it reaches the meridian.<br>Where the east and west limits overlap, either side can be used. Whether the mount flips is decided by “Preferred side” and the current pier side."));
+    }else body.append(el("div", "cnote", "No meridian items for a fork mount."));
+  }else if(ctlTab === "mech"){
+    renderMech(body, r);
+  }
+}
+
+const MICROSTEPS = [1, 2, 4, 8, 16, 32, 64, 128, 256];
+function parseAxis(str){
+  if(!str) return null; const a = str.split(","); if(a.length < 6) return null;
+  return {steps: parseFloat(a[0]), ms: parseInt(a[1]), irun: parseInt(a[2]), rev: parseInt(a[3]), min: parseInt(a[4]), max: parseInt(a[5])};
+}
+
+const revTxt = v => v === -2 ? "ON (reversed)" : v === -1 ? "OFF (normal)" : String(v);
+const STEPS_MIN = 150, STEPS_MAX = 122400;
+function axisLimits(n, altaz){
+  return n === 1 ? (altaz ? {minL: -360, minH: -180, maxL: 180, maxH: 360} : {minL: -270, minH: -90, maxL: 90, maxH: 270}) : {minL: -90, minH: 0, maxL: 0, maxH: 90};
+}
+function renderMech(body, r){
+  const g = ctlR && ctlR.g, altaz = !!g && g.type === "A";
+  const run = [parseFloat(r.GXE4), parseFloat(r.GXE5)], saved = [parseAxis(r.GXA1), parseAxis(r.GXA2)], rt = !!saved[0];
+  const sidPps = v => { const n = parseFloat(v); if(!(n > 0)) return "?"; const p = n * 360 / 86164.0905; return p.toFixed(2) + " pps (1 step = " + (1000 / p).toFixed(2) + " ms)"; };
+  body.append(el("div", "kvbox", kv("Active " + (altaz ? "Azimuth" : "RA") + " axis steps/deg", r.GXE4 || "?") + kv("Active " + (altaz ? "Altitude" : "DEC") + " axis steps/deg", r.GXE5 || "?") + (altaz ? "" : kv("Sidereal step rate, RA axis", sidPps(r.GXE4)) + kv("Sidereal step rate, Dec axis", sidPps(r.GXE5))) + kv("Settings mode", rt ? "Runtime settings (editable)" : "Using Config.h values")));
+  if(!rt){
+    body.append(el("div", "cnote", "Currently using the Config.h values (they are restored at every boot).<br>steps/deg, microstepping, motor reversal" + (altaz ? ", travel range" : "") + " from this chart, first press “Enable editing”. Changed values are kept after power-off and take effect from the next boot, overriding Config.h."));
+    const b = el("button", "wide", "Enable editing<small>Switch to runtime settings (:SXAC,0#)</small>"); b.onclick = mechEnable; body.append(b);
+    return;
+  }
+  const ax = altaz ? [["Azimuth axis (AZ)", 1], ["Altitude axis (ALT)", 2]] : [["RA axis (right ascension / hour angle)", 1], ["DEC axis (declination)", 2]];
+  const lab = el("label", "autoscale", "<input type='checkbox' id='mAuto' " + (ctlDraft["mAuto"] === false ? "" : "checked") + "> Auto-scale steps/deg when microstepping changes"); body.append(lab);
+  lab.querySelector("input").onchange = e => { ctlDraft["mAuto"] = e.target.checked; };
+  const numIn = (id, dk, val, min, max) => { const i = el("input"); i.type = "number"; i.step = "any"; i.id = id; if(min !== undefined){ i.min = min; i.max = max; } i.value = dk in ctlDraft ? ctlDraft[dk] : val; i.oninput = () => { ctlDraft[dk] = i.value; }; return i; };
+  ax.forEach(([name, n]) => {
+    const sv = saved[n - 1]; if(!sv) return;
+    const card = el("div", "mcard"); card.append(el("div", "ctitle", name + (Math.abs(sv.steps - run[n - 1]) > 0.0005 ? " <span style='color:var(--warn)'>Saved " + sv.steps + " → applied after restart</span>" : "")));
+    const inp = numIn("mS" + n, "m" + n + "s", sv.steps, STEPS_MIN, STEPS_MAX);
+    const sel = el("select"); sel.id = "mM" + n; MICROSTEPS.forEach(m => { const o = el("option", "", "×" + m); o.value = m; sel.append(o); }); sel.value = ("m" + n + "m") in ctlDraft ? ctlDraft["m" + n + "m"] : sv.ms;
+    sel.onchange = () => {
+      ctlDraft["m" + n + "m"] = sel.value;
+      const auto = ($("mAuto") || {}).checked !== false, base = parseFloat(inp.value);
+      if(auto && base > 0){ inp.value = Math.round(base * (parseInt(sel.value) / parseInt(sv.ms)) * 1000) / 1000; ctlDraft["m" + n + "s"] = inp.value; }
+    };
+    const rsel = el("select"); rsel.id = "mR" + n; [[-1, "OFF (normal)"], [-2, "ON (reversed)"]].forEach(([v, t]) => { const o = el("option", "", t); o.value = v; rsel.append(o); });
+    rsel.value = ("m" + n + "r") in ctlDraft ? ctlDraft["m" + n + "r"] : sv.rev; rsel.onchange = () => { ctlDraft["m" + n + "r"] = rsel.value; };
+    const row = (label, ctl) => { const f = el("div", "mrow"); f.append(el("span", "", label), ctl); card.append(f); };
+    row("steps/deg (" + STEPS_MIN + "–" + STEPS_MAX + ")", inp); row("Microstepping", sel); row("Motor reversal", rsel);
+    const L = axisLimits(n, altaz);
+    if(altaz){
+      row("Travel min (" + L.minL + "–" + L.minH + "°)", numIn("mA" + n, "m" + n + "a", sv.min, L.minL, L.minH));
+      row("Travel max (" + L.maxL + "–" + L.maxH + "°)", numIn("mB" + n, "m" + n + "b", sv.max, L.maxL, L.maxH));
+      card.append(el("div", "cnote", n === 1 ? "The azimuth axis travel range is set within −360° to +360° to avoid cable wrap." : "Altitude axis range (min −90 to 0°, max 0 to 90°)."));
+    }else card.append(el("div", "cnote", "Travel range " + sv.min + "°–" + sv.max + "° · current " + (sv.irun === -1 ? "not set" : sv.irun + "mA") + " (not editable for equatorial mounts)"));
+    const brow = el("div", "nrow");
+    const ap = el("button", "", "Apply<small>applied after restart</small>"); ap.onclick = () => mechApply(n);
+    const rv = el("button", "danger2", "Restore default<small>Config.h value at next boot</small>"); rv.onclick = () => mechRevert(n);
+    brow.append(ap, rv); card.append(brow); body.append(card);
+  });
+  body.append(el("div", "cnote", "<b>About microstepping</b>: Mounts whose driver microstepping is fixed in hardware (such as the NS-3000) should keep this at “×1”. For mounts where the firmware configures the driver (e.g. TMC), steps/deg changes by the same ratio (auto-scaling). Values the firmware does not support are rejected."));
+  const off = el("button", "wide", "Disable editing (revert to Config.h values)<small>Leave runtime settings (:SXAC,1#)</small>"); off.onclick = mechDisable; body.append(off);
+}
+async function mechEnable(){
+  if(!confirm("Switch to runtime settings mode.\nFrom now on you can change steps/deg and microstepping from this chart, and the values are kept after power-off.\n(Current values do not change.)\nContinue?")) return;
+  await ctlDo("Enable editing", async () => { await ask("SXAC,0"); await new Promise(r => setTimeout(r, 300)); const ok = !!(await ask("GXA1")); toast(ok ? "Editing enabled" : "Could not enable editing", !ok); });
+}
+async function mechDisable(){
+  if(!confirm("Return to using the Config.h values.\nValues changed from this chart will be replaced by the Config.h values at the next boot.\nContinue?")) return;
+  await ctlDo("Disable editing", async () => { await ask("SXAC,1"); await new Promise(r => setTimeout(r, 300)); const ok = !(await ask("GXA1")); toast(ok ? "Returned to using Config.h values" : "Could not revert", !ok); });
+}
+async function mechRevert(n){
+  if(!confirm((n === 1 ? "RA" : "DEC") + " axis steps/deg and microstepping will be restored to the defaults (Config.h values).\nTakes effect at the next boot (power cycle). Continue?")) return;
+  await ctlDo("Restore default", async () => { const rep = await askv("SXA" + n + ",R"); toast(rep === "0" ? "Rejected" : (n === 1 ? "RA" : "DEC") + " axis: will be restored to default at the next boot", rep === "0"); });
+}
+async function mechApply(n){
+  const sv = parseAxis(ctlR && ctlR.r["GXA" + n]); if(!sv){ toast("Cannot read current values", true); return; }
+  const altaz = !!(ctlR.g && ctlR.g.type === "A"), L = axisLimits(n, altaz);
+  const steps = parseFloat($("mS" + n).value), ms = parseInt($("mM" + n).value), rev = parseInt($("mR" + n).value);
+  let mn = sv.min, mx = sv.max;
+  if(altaz){ mn = parseInt($("mA" + n).value); mx = parseInt($("mB" + n).value); }
+  if(!(steps >= STEPS_MIN && steps <= STEPS_MAX)){ toast("steps/deg must be within " + STEPS_MIN + "–" + STEPS_MAX + " (firmware limits; if microstep auto-scaling exceeded it, revisit the value)", true); return; }
+  if(altaz && !(mn >= L.minL && mn <= L.minH && mx >= L.maxL && mx <= L.maxH)){ toast("Travel range must be: min " + L.minL + "–" + L.minH + "°, max " + L.maxL + "–" + L.maxH + "°", true); return; }
+  const ch = [];
+  if(steps !== sv.steps) ch.push("steps/deg: " + sv.steps + " → " + steps + (Math.abs(steps / sv.steps - 1) > 0.5 ? "(" + (steps / sv.steps).toFixed(2) + "x)" : ""));
+  if(ms !== sv.ms) ch.push("Microstepping: ×" + sv.ms + " → ×" + ms);
+  if(rev !== sv.rev) ch.push("Motor reversal: " + revTxt(sv.rev) + " → " + revTxt(rev));
+  if(mn !== sv.min) ch.push("Travel min: " + sv.min + "° → " + mn + "°");
+  if(mx !== sv.max) ch.push("Travel max: " + sv.max + "° → " + mx + "°");
+  if(!ch.length){ toast("No changes"); return; }
+  const name = altaz ? (n === 1 ? "Azimuth" : "Altitude") : (n === 1 ? "RA" : "DEC");
+  if(!confirm(name + " axis will be changed.\n" + ch.join("\n") + "\n\nWrong values can cause large pointing errors, lost steps or mechanical collisions. The values take effect at the next boot (power cycle).\nContinue?")) return;
+  await ctlDo("Mechanics settings", async () => {
+    const cmd = "SXA" + n + "," + steps + "," + ms + "," + sv.irun + "," + rev + "," + mn + "," + mx;
+    const rep = await askv(cmd); await new Promise(r => setTimeout(r, 300));
+    const now = parseAxis(await ask("GXA" + n)), okk = rep !== "0" && !!now && Math.abs(now.steps - steps) < 0.002 && now.ms === ms && now.rev === rev && now.min === mn && now.max === mx;
+    if(okk) ["s", "m", "r", "a", "b"].forEach(k => delete ctlDraft["m" + n + k]);
+    toast(okk ? name + " axis saved. Power-cycle to apply." : name + " axis could not be changed (rejected by firmware: out of range / driver not supported)", !okk);
+  });
+}
+function numRow(title, note, cur, min, max, step, unit, apply, quick){
+  const wrap = el("div", "cblock"); wrap.append(el("div", "ctitle", title + " <span>Now " + (isNaN(cur) ? "?" : (cur > 0 && min < 0 ? "+" : "") + cur) + unit + "</span>"));
+  const row = el("div", "nrow"), inp = el("input"); inp.type = "number"; inp.min = min; inp.max = max; inp.step = step; inp.value = title in ctlDraft ? ctlDraft[title] : (isNaN(cur) ? "" : cur); inp.oninput = () => { ctlDraft[title] = inp.value; };
+  const b = el("button", "", "Apply"); b.onclick = () => { const v = parseInt(inp.value); if(isNaN(v) || v < min || v > max){ toast(title + ": " + min + "–" + max + " is the allowed range", true); return; } delete ctlDraft[title]; apply(v); };
+  row.append(inp, b);
+  if(quick !== undefined){ const q = el("button", "safe", "Set to " + quick + "<small>safe side</small>"); q.onclick = () => { delete ctlDraft[title]; inp.value = quick; apply(quick); }; row.append(q); }
+  wrap.append(row, el("div", "cnote", note)); return wrap;
+}
+async function limSet(label, cmd, oldV, newV, unit, readCmd){
+  if(String(oldV) === String(newV)){ toast(label + " unchanged"); return; }
+  if(!confirm(label + " — change it?\n" + oldV + unit + " → " + newV + unit + "\n(Saved to the mount’s EEPROM)")) return;
+  await ctlDo(label, async () => {
+    const rep = await ask(cmd); await new Promise(r => setTimeout(r, 300));
+    let now = readCmd ? await askv(readCmd) : null;
+    if(readCmd === "Gh" || readCmd === "Go") now = String(parseInt(now));
+    let okk;
+    if(readCmd) okk = String(now) === String(newV) || (readCmd === "GX96" && now === String(newV === "East" ? "E" : newV === "West" ? "W" : "B"));
+    else { const gg = parseGU(await ask("GU")); okk = !!gg && gg.autoflip === (String(newV) === "ON"); }
+    toast(okk ? label + " → " + newV + unit : label + " could not be changed (out of range / rejected). Reply: " + (rep === null ? "None" : rep), !okk);
+  });
+}
+async function posAct(c){
+  const msg = {hQ: "Register the current direction as the “park position”. “Park” will move to this position from now on. Continue?",
+    hF: "Initialize the mount’s coordinates as “at the home position (toward the north celestial pole)”.\nIf the telescope is not actually in the home orientation (counterweight down for a GEM), later slews will be off. Alignment is also reset.\nContinue?"}[c];
+  if(msg && !confirm(msg)) return;
+  const name = {hP: "Park", hR: "Unpark", hC: "Go to home", hQ: "Set park position", hF: "Reset to home"}[c];
+  await ctlDo(name, async () => {
+    const rep = await ask(c); await new Promise(r => setTimeout(r, 400));
+    const g = parseGU(await ask("GU")), noReply = c === "hC" || c === "hF";
+    let okk = noReply ? true : rep !== null;
+    if(c === "hP") okk = okk && !!g && (g.park === "I" || g.park === "P");
+    if(c === "hR") okk = okk && !!g && g.park === "p";
+    toast(okk ? name + (c === "hP" || c === "hC" ? " started" : " done") : name + " failed", !okk);
+  });
+}
+async function ctlDo(label, fn){
+  try{ await fn(); }catch(e){ toast(label + " failed: " + e.message, true); }
+  await new Promise(r => setTimeout(r, 250)); ctlBusy = false; await ctlRead();
+}
+async function setGotoSpeed(n){ await ctlDo("GOTO speed", async () => { await ask("SX93," + n); toast("GOTO speed → " + GOTO_PRESETS.find(p => p[0] === n)[1]); }); }
+async function setMoveRate(n){ await ctlDo("Manual speed", async () => { await ask("R" + n); toast("Manual move speed → " + MOVE_RATES[n][1]); }); }
+async function setTracking(on){ await ctlDo("Tracking", async () => {
+  await ask(on ? "Te" : "Td"); await new Promise(r => setTimeout(r, 300));
+  const g = parseGU(await ask("GU")), okk = !!(g && g.tracking === on);
+  toast(okk ? "Tracking " + (on ? "ON" : "OFF") : "Could not switch tracking (e.g. parked)", !okk); }); }
+async function setTrackRate(c){ await ctlDo("Tracking rate", async () => { await ask(c); toast("Tracking rate → " + TRACK_RATES.find(t => t[0] === c)[1]); }); }
+async function fineTrack(c){ await ctlDo("Fine adjust", async () => { await ask(c); const hz = parseFloat(await ask("GT")); const sd = parseFloat(ctlR && ctlR.r.GXE4); toast("Tracking step rate " + (isNaN(hz) || !(sd > 0) ? "" : (sd * hz / 14400).toFixed(2) + " pps")); }); }
+CTL_TABS.forEach(([k, t]) => { const b = el("button", "", t); b.dataset.k = k; b.onclick = () => { ctlTab = k; for(const d in ctlDraft) delete ctlDraft[d]; renderCtl(); }; $("ctlTabs").append(b); });
+setInterval(() => {
+  const ae = document.activeElement, editing = ae && (ae.tagName === "INPUT" || ae.tagName === "SELECT") && $("ctlBody").contains(ae);
+  if($("ctl").classList.contains("show") && !ctlBusy && !editing && !Object.keys(ctlDraft).length) ctlRead();
+}, 4000);
+
+
+const pad = (n, w) => String(Math.abs(n)).padStart(w || 2, "0");
+const ok1 = r => /^1/.test(r || "");
+async function sendLoc(){
+  const la = Math.abs(loc.lat), lo = Math.abs(loc.lon);
+  const lat = (loc.lat < 0 ? "-" : "+") + pad(Math.floor(la)) + "*" + pad(Math.round((la - Math.floor(la)) * 60));
+
+  const lon = (loc.lon > 0 ? "-" : "+") + pad(Math.floor(lo), 3) + "*" + pad(Math.round((lo - Math.floor(lo)) * 60));
+  const a = await ask("St" + lat), b = await ask("Sg" + lon);
+  return [a, b];
+}
+async function sendTime(){
+  const d = new Date(), off = d.getTimezoneOffset() / 60;
+  const g = (off < 0 ? "-" : "+") + pad(Math.floor(Math.abs(off))) + "." + (Math.abs(off) % 1 ? "5" : "0");
+  const res = [];
+  res.push(await ask("SG" + g));
+  res.push(await ask("SC" + pad(d.getMonth() + 1) + "/" + pad(d.getDate()) + "/" + pad(d.getFullYear() % 100)));
+  const d2 = new Date();
+  res.push(await ask("SL" + pad(d2.getHours()) + ":" + pad(d2.getMinutes()) + ":" + pad(d2.getSeconds())));
+  return res;
+}
+async function sendToMount(what){
+  if(mount.type === "generic"){ toast("Sending site and date/time is not available in generic mode", true); return; }
+  if(!$("dot").classList.contains("on")){ toast("Not connected to the mount", true); return; }
+  const txt = what === "loc" ? "Site (" + fmtLoc() + ")" : "Date/time (" + new Date().toLocaleString() + ")";
+  if(!confirm(txt + " — send to the mount?\nChanging the time or site can affect alignment and tracking.")) return;
+  const r = what === "loc" ? await sendLoc() : await sendTime();
+  const good = r.filter(ok1).length;
+  toast((good === r.length ? "Sent" : "Some replies are unclear (" + good + "/" + r.length + ")") + " [" + r.map(x => x === null ? "no reply" : x.slice(0, 6)).join(", ") + "]", good !== r.length);
+  setTimeout(infoPoll, 600);
+}
+
+async function mountLocation(silent){
+  if(mount.type === "generic"){
+    const j = await ginfo();
+    if(j && j.state && j.state.haveSite){ setLoc(j.state.siteLat, j.state.siteLon, "mount"); if(!silent) toast("Got the site from the mount"); }
+    else if(!silent) toast("Cannot get: this mount does not report its site", true);
+    return;
+  }
+  try{
+    const a = await api("/api/command?cmd=" + encodeURIComponent("Gt")), b = await api("/api/command?cmd=" + encodeURIComponent("Gg"));
+    const pa = /([+-]?\d+)\D+(\d+)/.exec(JSON.stringify(a.data ?? a.message ?? a)), pb = /([+-]?\d+)\D+(\d+)/.exec(JSON.stringify(b.data ?? b.message ?? b));
+    if(!pa || !pb) throw new Error("Cannot parse the reply");
+    const lat = Math.sign(+pa[1] || 1) * (Math.abs(+pa[1]) + (+pa[2]) / 60), lon = -(Math.sign(+pb[1] || 1) * (Math.abs(+pb[1]) + (+pb[2]) / 60));
+    if(lat === 0 && lon === 0) throw new Error("Mount site is not set");
+    setLoc(lat, lon, "mount"); if(!silent) toast("Got the site from the mount");
+  }catch(e){ if(!silent) toast("Cannot get: " + e.message, true); }
+}
+function syncLocUI(){ $("lat").value = loc.lat.toFixed(3); $("lon").value = (-loc.lon).toFixed(3); $("locNow").textContent = fmtLoc(); }
+function setLoc(lat, lon, src){ loc.lat = lat; loc.lon = lon; loc.src = src; store.set("loc", loc); saveRemote(); syncLocUI(); }
+
+$("bGps").onclick = () => {
+  if(!navigator.geolocation){ toast("Not available on this device", true); return; }
+  navigator.geolocation.getCurrentPosition(p => { setLoc(p.coords.latitude, p.coords.longitude, "gps"); toast("Location obtained"); },
+    () => toast("Cannot get it (over http the device location may be unavailable; enter it manually)", true), {timeout: 8000});
+};
+$("bIdent").onclick = () => identify(true);
+$("bMountLoc").onclick = () => mountLocation(false);
+$("bSendLoc").onclick = () => sendToMount("loc"); $("bSendTime").onclick = () => sendToMount("time");
+$("lat").onchange = () => { const v = parseFloat($("lat").value); if(!isNaN(v)) setLoc(Math.max(-90, Math.min(90, v)), loc.lon, "manual"); };
+$("lon").onchange = () => { const v = parseFloat($("lon").value); if(!isNaN(v)) setLoc(loc.lat, Math.max(-180, Math.min(180, -v)), "manual"); };
+
+
+
+
+let polling = false;
+async function poll(){
+  if(polling) return; polling = true;
+  try{
+    const j = await api("/api/status"), d = j.data || {};
+    $("dot").classList.add("on"); $("stt").textContent = d.state || "";
+    if(mount.type === null && !identifying){ await identify(false); renderCtl(); ctlRead(); }
+  }catch(err){ $("dot").classList.remove("on"); }
+  polling = false;
+}
+
+const REMOTE = "/starchart_settings.json";
+let saveT = 0;
+function saveRemote(){
+  clearTimeout(saveT);
+  saveT = setTimeout(async () => {
+    try{
+      let j = {}; try{ const r0 = await fetch(API + REMOTE, {cache: "no-store"}); if(r0.ok) j = JSON.parse(await r0.text()) || {}; }catch(e){}
+      j.loc = loc;
+      const r = await fetch(API + "/api/ui/upload?filename=" + REMOTE, {method: "POST", headers: {"Content-Type": "text/plain"}, body: JSON.stringify(j)});
+      $("saveSt").textContent = r.ok ? "Saved to the mount" : "Saving to the mount failed (HTTP " + r.status + ")";
+    }catch(e){ $("saveSt").textContent = "Cannot save to the mount: " + e.message; }
+  }, 800);
+}
+async function loadRemote(){
+  try{
+    const r = await fetch(API + REMOTE, {cache: "no-store"}); if(!r.ok) return;
+    const j = JSON.parse(await r.text());
+    if(j.loc && typeof j.loc.lat === "number"){ Object.assign(loc, j.loc); store.set("loc", loc); syncLocUI(); }
+  }catch(e){}
+}
+
+async function extraInfo(){
+  const ver = await ask("=V"), st = await askv("GX89"), wp = await ask("GXWP"), v97 = await ask("GX97");
+  const p = String(wp || "").split(",");
+  $("exBadge").textContent = (ver || "").replace(/^LUNA OnStepNinja NS-4000 */, "");
+  $("exInfo").innerHTML = kv("Date & time", st === "0" ? "set" : st === "1" ? "not set" : "?", st === "1" ? "w" : "")
+    + kv("Max step rate", p[0] ? p[0] + " pps (" + p[1] + "x sidereal)" : "?")
+    + kv("Current GOTO speed", v97 ? v97 + " °/s" : "?");
+}
+
+async function baseLoad(){
+  const v = await askv("GX9G");
+  if(v && document.activeElement !== $("baseIn")) $("baseIn").value = parseFloat(v).toFixed(3);
+  return v;
+}
+$("baseSet").onclick = async () => {
+  const x = parseFloat($("baseIn").value);
+  if(!(x >= 0.001 && x <= 20)){ toast("Enter 0.001–20 °/s", true); return; }
+  const r = await askv("SX94," + x);
+  if(r !== "1"){ toast("Could not change it (GOTO in progress, or out of range)", true); return; }
+  $("baseIn").blur();
+  const got = parseFloat(await baseLoad()); await extraInfo();
+  toast(Math.abs(got - x) > 0.0005 ? "Base rate set to " + got.toFixed(3) + " °/s (limited by the maximum; entered " + x + ")" : "Base rate set to " + got.toFixed(3) + " °/s");
+};
+async function autoClock(){
+  const st = await askv("GX89");
+  if(st !== "1") return;
+  const r = await sendTime(), good = r.filter(ok1).length;
+  toast(good === r.length ? "The date and time were not set, so this device’s clock was sent" : "Could not send the clock [" + r.join(", ") + "]", good !== r.length);
+}
+syncLocUI();
+(async () => { await loadRemote(); await poll(); await autoClock(); await extraInfo(); await baseLoad(); infoPoll(); })();
+setInterval(poll, 3000); setInterval(infoPoll, 6000); setInterval(renderInfo, 1000); setInterval(extraInfo, 15000);
+</script>
+</body>
+</html>

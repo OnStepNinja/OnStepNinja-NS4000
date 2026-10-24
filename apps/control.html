@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<!-- NS-4000 Control (control.html) - LUNA OnStepNinja NS-4000 companion app
+     Copyright (c) 2026 Nishioka Sadahiko. All rights reserved. Freeware: see LICENSE (personal use free; at-cost copies to friends OK; no sales, no commercial use, no re-hosting). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NS-4000 Control</title>
+<style>
+  :root{
+    --bg:#0b0f17; --card:#151b26; --card2:#1d2533; --line:#2a3445;
+    --txt:#e6edf3; --sub:#8b97a8; --accent:#4da3ff; --accent2:#2b6fd6;
+    --ok:#34d399; --warn:#fbbf24; --bad:#f87171; --r:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; background:var(--bg); color:var(--txt);
+    font-family:-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:14px; max-width:520px; margin:0 auto; padding-bottom:40px;}
+  h1{font-size:18px; margin:4px 0 14px; display:flex; align-items:center; gap:10px;}
+  .dot{width:11px; height:11px; border-radius:50%; background:var(--bad);
+    box-shadow:0 0 8px var(--bad); transition:.3s;}
+  .dot.on{background:var(--ok); box-shadow:0 0 8px var(--ok);}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+    padding:16px; margin-bottom:14px;}
+  .lbl{font-size:11px; color:var(--sub); letter-spacing:.06em; text-transform:uppercase;}
+  .coord{display:flex; gap:12px; margin-top:6px;}
+  .coord>div{flex:1;}
+  .val{font-size:26px; font-weight:600; font-variant-numeric:tabular-nums;
+    letter-spacing:.02em; margin-top:2px;}
+  .state{display:inline-block; margin-top:12px; padding:5px 12px; border-radius:20px;
+    font-size:13px; font-weight:600; background:var(--card2); color:var(--sub);}
+  .state.move{background:rgba(251,191,36,.15); color:var(--warn);}
+  .state.track{background:rgba(52,211,153,.15); color:var(--ok);}
+  .row{display:flex; gap:10px;}
+  input{width:100%; background:var(--card2); border:1px solid var(--line);
+    border-radius:10px; color:var(--txt); padding:12px; font-size:16px;
+    font-variant-numeric:tabular-nums; text-align:center;}
+  input:focus{outline:none; border-color:var(--accent);}
+  .fld{flex:1;}
+  .fld .lbl{margin-bottom:5px; display:block;}
+  button{border:none; border-radius:10px; color:#fff; font-size:15px; font-weight:600;
+    padding:13px; cursor:pointer; transition:.15s; -webkit-user-select:none; user-select:none;}
+  button:active{transform:scale(.97);}
+  button:disabled{opacity:.4; pointer-events:none;}
+  .b-pri{background:linear-gradient(135deg,var(--accent),var(--accent2)); width:100%; margin-top:12px;}
+  .b-stop{background:linear-gradient(135deg,#f87171,#dc2626); width:100%; font-size:17px; padding:16px;}
+  .b-tog{flex:1; background:var(--card2); border:1px solid var(--line);}
+  .b-tog.act{background:linear-gradient(135deg,var(--ok),#10b981); border-color:transparent;}
+  .toast{position:fixed; bottom:18px; left:50%; transform:translateX(-50%) translateY(80px);
+    background:var(--card2); border:1px solid var(--line); padding:11px 18px; border-radius:12px;
+    font-size:14px; transition:.3s; opacity:0; pointer-events:none; max-width:90%;}
+  .toast.show{transform:translateX(-50%) translateY(0); opacity:1;}
+  .toast.err{border-color:var(--bad); color:var(--bad);}
+  /* Phase 2: direction pad */
+  .pad{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px;
+    max-width:260px; margin-left:auto; margin-right:auto;}
+  .pad button{background:var(--card2); border:1px solid var(--line); font-size:20px; padding:18px 0;}
+  .pad button:active{background:var(--accent2); border-color:transparent;}
+  .pad .sp{visibility:hidden;}
+  .pad .ctr{background:rgba(248,113,113,.15); color:var(--bad); font-size:14px; border-color:transparent;}
+  /* slew rate presets */
+  .rates{display:flex; gap:8px; margin-top:10px;}
+  .rates button{flex:1; background:var(--card2); border:1px solid var(--line); font-size:13px; padding:10px 0;}
+  .rates button.act{background:linear-gradient(135deg,var(--accent),var(--accent2)); border-color:transparent;}
+  /* 26-step slider */
+  .spd{display:flex; align-items:center; gap:12px; margin-top:10px;}
+  .spd input[type=range]{flex:1; accent-color:var(--accent);}
+  .spd .pct{min-width:62px; text-align:right; font-size:22px; font-weight:600;
+    font-variant-numeric:tabular-nums;}
+  /* Phase 3: action buttons */
+  .grid{display:grid; gap:8px; margin-top:8px;}
+  .g2{grid-template-columns:1fr 1fr;}
+  .g3{grid-template-columns:1fr 1fr 1fr;}
+  .grid button{background:var(--card2); border:1px solid var(--line); font-size:14px; padding:12px 4px;}
+  .grid button:active{background:var(--accent2); border-color:transparent;}
+  .grid button.danger{border-color:rgba(248,113,113,.4); color:#fca5a5;}
+  .grid button.tog.act{background:linear-gradient(135deg,var(--ok),#10b981); border-color:transparent; color:#fff;}
+  .info{margin-top:10px; font-size:13px; color:var(--sub); min-height:18px;}
+  .info b{color:var(--txt); font-weight:600;}
+  .sub-lbl{display:block; font-size:11px; color:var(--sub); margin-top:14px; letter-spacing:.05em;}
+  .link{background:none; border:1px solid var(--line); color:var(--accent); width:100%;
+    margin-top:8px; padding:12px;}
+</style>
+</head>
+<body>
+
+<h1 style="flex-wrap:wrap;row-gap:2px"><span id="dot" class="dot"></span><span style="font-size:22px;white-space:nowrap">NS-4000 Control</span><span id="appVer" style="font-size:14px;color:var(--sub);font-weight:500;white-space:nowrap">v1.1.0</span></h1>
+
+
+<div class="card">
+  <div class="coord">
+    <div><span class="lbl">RA</span><div id="ra" class="val">--:--:--</div></div>
+    <div><span class="lbl">Dec</span><div id="dec" class="val">--:--:--</div></div>
+  </div>
+  <span id="state" class="state">---</span>
+</div>
+
+
+<div class="card">
+  <span class="lbl">TRACKING</span>
+  <div class="row" style="margin-top:8px;">
+    <button id="trkOn"  class="b-tog" onclick="track(true)">Tracking ON</button>
+    <button id="trkOff" class="b-tog" onclick="track(false)">Tracking OFF</button>
+  </div>
+  <button class="b-stop" style="margin-top:12px;" onclick="stop()">■ STOP</button>
+</div>
+
+
+<div class="card">
+  <span class="lbl">MANUAL SLEW</span>
+  <div class="pad">
+    <button class="sp"></button>
+    <button onpointerdown="mv('n')" onpointerup="qt('n')" onpointerleave="qt('n')" oncontextmenu="return false">N ▲</button>
+    <button class="sp"></button>
+    <button onpointerdown="mv('w')" onpointerup="qt('w')" onpointerleave="qt('w')" oncontextmenu="return false">◀ W</button>
+    <button class="ctr" onclick="stop()">STOP</button>
+    <button onpointerdown="mv('e')" onpointerup="qt('e')" onpointerleave="qt('e')" oncontextmenu="return false">E ▶</button>
+    <button class="sp"></button>
+    <button onpointerdown="mv('s')" onpointerup="qt('s')" onpointerleave="qt('s')" oncontextmenu="return false">S ▼</button>
+    <button class="sp"></button>
+  </div>
+  <span class="lbl" style="display:block; margin-top:14px;">Slew rate</span>
+  <div class="rates" id="rates">
+    <button data-r="RG" onclick="rate('RG',this)">Guide 1x</button>
+    <button data-r="RC" onclick="rate('RC',this)">Center 8x</button>
+    <button data-r="RM" onclick="rate('RM',this)">Move 20x</button>
+    <button data-r="RS" onclick="rate('RS',this)">Max ½</button>
+  </div>
+</div>
+
+
+<div class="card">
+  <span class="lbl">GOTO SPEED (percent of the base rate)</span>
+  <div class="spd">
+    <input id="spd" type="range" min="0" max="4" value="2"
+      oninput="spdLabel()" onchange="spdSet()">
+    <span id="spdPct" class="pct">100%</span>
+  </div>
+  <div id="spdInfo" class="info">—</div>
+</div>
+
+
+<div class="card">
+  <span class="lbl">BACKLASH COMPENSATION (arcsec)</span>
+  <div class="row" style="margin-top:8px">
+    <div class="fld"><span class="lbl">RA axis</span><input id="blR" type="number" min="0" max="3600" step="1" inputmode="numeric"></div>
+    <div class="fld"><span class="lbl">Dec axis</span><input id="blD" type="number" min="0" max="3600" step="1" inputmode="numeric"></div>
+  </div>
+  <button class="b-pri" onclick="blSet()">Set</button>
+  <div id="blInfo" class="info">—</div>
+  <div class="info">When an axis reverses, the gear play is taken up first at 25x sidereal (0–3600 arcsec). Saved in the mount and kept after power off. Too large a value adds extra motion at every reversal and can make guiding unstable; start with a small value. Cannot be changed during a GOTO.</div>
+</div>
+
+
+<div class="card">
+  <span class="lbl">ALIGNMENT</span>
+  <div class="grid g2">
+    <button onclick="sync()">Sync to the current target</button>
+    <button class="danger" onclick="alignSave()">Save model (AW)</button>
+  </div>
+  <span class="sub-lbl">N-star alignment (start from the home position)</span>
+  <div class="grid g3">
+    <button onclick="alignStart(1)">1★ start</button>
+    <button onclick="alignStart(2)">2★ start</button>
+    <button onclick="alignStart(3)">3★ start</button>
+  </div>
+  <div class="grid g2">
+    <button onclick="alignAccept()">★ Accept (A+)</button>
+    <button onclick="alignStatus()">Refresh (A?)</button>
+  </div>
+  <div id="alignInfo" class="info">—</div>
+</div>
+
+<!-- Phase 3: Park / Home -->
+<div class="card">
+  <span class="lbl">PARK / HOME</span>
+  <div class="grid g2">
+    <button onclick="cmdT('hP','Park')">Park</button>
+    <button onclick="cmdT('hR','Unpark')">Unpark</button>
+  </div>
+  <span class="sub-lbl">Home</span>
+  <div class="grid g2">
+    <button onclick="cmdT('hC','Go home')">Go home</button>
+    <button class="danger" onclick="confirmCmd('hF','Set the current position as the home reference?')">Set home reference</button>
+  </div>
+  <div class="grid">
+    <button class="danger" onclick="confirmCmd('hQ','Set the current position as the park position?')">Set park position here</button>
+  </div>
+</div>
+
+
+<div class="card">
+  <span class="lbl">SETTINGS</span>
+  <span class="sub-lbl">Buzzer (connection check)</span>
+  <div class="grid g2">
+    <button onclick="beep()">🔔 Sound the buzzer</button>
+  </div>
+  <span class="sub-lbl">Beep during GOTO</span>
+  <div class="grid g2">
+    <button id="bzOn"  class="tog" onclick="buzzer(1)">Beep ON</button>
+    <button id="bzOff" class="tog" onclick="buzzer(0)">Beep OFF</button>
+  </div>
+  <button class="link" onclick="location.href='/'">Open the Console (Network Information, first page) ›</button>
+  <button class="link" onclick="location.href='/settings.html'">Open Settings (date/time, site, limits, axes, restart) ›</button>
+  <button class="link" onclick="location.href='/files'">Open the File Manager (Wi-Fi and PIN registration, files) ›</button>
+  <div id="sysInfo" class="info">—</div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let busy = false;
+
+
+async function api(path){
+  const r = await fetch(path, {cache:"no-store"});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  return await r.json();
+}
+
+const cmd = c => api("/api/command?cmd="+encodeURIComponent(c));
+
+function toast(msg, err){
+  const t=$("toast"); t.textContent=msg; t.className="toast show"+(err?" err":"");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.className="toast",1800);
+}
+
+
+async function poll(){
+  try{
+    const j = await api("/api/status");
+    const d = j.data || {};
+    $("ra").textContent  = d.ra  || "--:--:--";
+    $("dec").textContent = d.dec || "--:--:--";
+    const st = (d.state||"").toLowerCase();
+    const e = $("state");
+    e.textContent = d.state || "---";
+    e.className = "state" + (st.includes("slew")||st.includes("move") ? " move"
+                          : st.includes("track") ? " track" : "");
+    const moving = st.includes("slew") || st.includes("move");
+
+    const tracking = st.includes("track");
+    $("trkOn").classList.toggle("act", tracking);
+    $("trkOff").classList.toggle("act", !tracking && !moving);
+    $("dot").classList.add("on");
+  }catch(e){
+    $("dot").classList.remove("on");
+  }
+}
+
+
+async function stop(){
+  try{ await api("/api/stop"); toast("Stopped"); poll(); }
+  catch(e){ toast("Stop failed: "+e.message, true); }
+}
+async function track(on){
+  try{ await cmd(on?"Te":"Td"); toast(on?"Tracking ON":"Tracking OFF"); setTimeout(poll,200); }
+  catch(e){ toast("Failed: "+e.message, true); }
+}
+
+
+const held = {};
+async function mv(d){
+  if(held[d]) return; held[d]=true;
+  try{ await cmd("M"+d); }catch(e){ toast("Move failed: "+e.message, true); held[d]=false; }
+}
+async function qt(d){
+  if(!held[d]) return; held[d]=false;
+  try{ await cmd("Q"+d); }catch(e){ toast("Stop failed: "+e.message, true); }
+}
+async function rate(r, el){
+  try{
+    await cmd(r);
+    [...$("rates").children].forEach(b=>b.classList.toggle("act", b===el));
+    toast("Slew rate: "+el.textContent.trim());
+  }catch(e){ toast("Failed: "+e.message, true); }
+}
+
+
+
+const SPD_PCT = [50,75,100,150,200];
+function spdLabel(){ $("spdPct").textContent = SPD_PCT[+$("spd").value] + "%"; }
+async function spdSet(){
+  const n = 5 - (+$("spd").value);   // 50%→5 … 200%→1
+  try{ await cmd("SX93,"+n); toast("GOTO speed: "+SPD_PCT[+$("spd").value]+"%"); spdInfo(); }
+  catch(e){ toast("Failed: "+e.message, true); }
+}
+
+async function spdInfo(){
+  try{
+    const v = (await cmd("GX97")).data.replace(/#/g,"");
+    const p = (await cmd("GXWP")).data.replace(/#/g,"").split(",");
+
+    const base = parseFloat((await cmd("GX93")).data), now = parseFloat((await cmd("GX92")).data);
+    if(base > 0 && now > 0){
+      const pct = base / now * 100;
+      let k = 0; SPD_PCT.forEach((x,i) => { if(Math.abs(x-pct) < Math.abs(SPD_PCT[k]-pct)) k = i; });
+      $("spd").value = k; spdLabel();
+    }
+    $("spdInfo").textContent = "Current GOTO speed " + v + "°/s (limit " + p[0] + "pps = " + p[1] + "x sidereal)";
+  }catch(e){ $("spdInfo").textContent = "—"; }
+}
+
+
+
+const blNum = async c => { const v = parseFloat(String((await cmd(c)).data).replace(/#/g, "")); return isNaN(v) ? null : v; };
+async function blLoad(){
+  try{
+    const r = await blNum("%BR"), d = await blNum("%BD"), e4 = await blNum("GXE4"), e5 = await blNum("GXE5");
+    if(r !== null && document.activeElement !== $("blR")) $("blR").value = r;
+    if(d !== null && document.activeElement !== $("blD")) $("blD").value = d;
+    const st = (v, spd) => v !== null && spd > 0 ? Math.round(v * spd / 3600) : "?";
+    $("blInfo").textContent = "In steps: RA " + st(r, e4) + " / DEC " + st(d, e5) + " steps";
+  }catch(e){ $("blInfo").textContent = "—"; }
+}
+async function blSet(){
+  const r = Math.round(+$("blR").value), d = Math.round(+$("blD").value);
+  if(!(r >= 0 && r <= 3600 && d >= 0 && d <= 3600)){ toast("Enter 0–3600 arcsec", true); return; }
+  try{
+    const gu = String((await cmd("GU")).data);
+    if(!gu.includes("N")){ toast("Cannot be changed during a GOTO", true); return; }
+    const a = String((await cmd("$BR" + r)).data).replace(/#/g, ""), b = String((await cmd("$BD" + d)).data).replace(/#/g, "");
+    if(a !== "1" || b !== "1"){ toast("Could not set [" + a + ", " + b + "]", true); return; }
+    $("blR").blur(); $("blD").blur(); await blLoad();
+    toast("Backlash: RA " + $("blR").value + "″ / DEC " + $("blD").value + "″");
+  }catch(e){ toast("Failed to set: " + e.message, true); }
+}
+
+async function cmdT(c, label){
+  try{ await cmd(c); toast(label); setTimeout(poll,300); }
+  catch(e){ toast(label+" failed: "+e.message, true); }
+}
+function confirmCmd(c, msg){ if(confirm(msg)) cmdT(c, "Done"); }
+
+
+async function sync(){ cmdT("CM","Synced to the current target"); }
+async function alignStart(n){ cmdT("A"+n, n+"★ alignment started"); setTimeout(alignStatus,400); }
+async function alignAccept(){ await cmdT("A+","★ accepted"); setTimeout(alignStatus,400); }
+function alignSave(){ if(confirm("Save the alignment model to EEPROM?")) cmdT("AW","Model saved"); }
+async function alignStatus(){
+  try{
+    const j = await cmd("A?");
+    const s = (j.data||"").replace(/#/g,"").trim();
+    if(s.length>=3){
+      $("alignInfo").innerHTML = "Max <b>"+s[0]+"</b>★ / current <b>"+s[1]+"</b> / needed <b>"+s[2]+"</b>"
+        + (s[2]!=="0" ? " — aligning" : " — idle");
+    } else $("alignInfo").textContent = "Status: "+s;
+  }catch(e){ $("alignInfo").textContent = "Could not read the status"; }
+}
+
+
+async function beep(){
+  try{ await cmd("=SD"); toast("Buzzer"); }
+  catch(e){ toast("Failed: "+e.message, true); }
+}
+
+
+async function buzzer(on){
+  try{
+    await cmd("=SD"+on);
+    $("bzOn").classList.toggle("act", on===1);
+    $("bzOff").classList.toggle("act", on===0);
+    toast(on?"Beep ON":"Beep OFF");
+  }catch(e){ toast("Failed: "+e.message, true); }
+}
+
+
+async function sysInfo(){
+  try{
+    const d = (await api("/api/system/info")).data;
+    $("sysInfo").textContent = d.version + " / IP " + d.staIp + " / AP " + d.apSsid + " / free memory " + Math.round(d.freeHeap/1024) + "KB";
+  }catch(e){ $("sysInfo").textContent = "—"; }
+}
+
+
+
+async function autoClock(){
+  try{
+    const st = String((await cmd("GX89")).data || "").replace(/#/g,"").trim();
+    if(st !== "1") return;
+    const pad = n => String(n).padStart(2,"0"), n = new Date(), off = n.getTimezoneOffset(), a = Math.abs(off);
+    await cmd("SG" + (off >= 0 ? "+" : "-") + pad(Math.floor(a/60)) + (a%60 ? ":" + pad(a%60) : ""));
+    const n2 = new Date();
+    await cmd("SL" + pad(n2.getHours()) + ":" + pad(n2.getMinutes()) + ":" + pad(n2.getSeconds()));
+    await cmd("SC" + pad(n2.getMonth()+1) + "/" + pad(n2.getDate()) + "/" + pad(n2.getFullYear()%100));
+    toast("The date and time were not set, so this device’s clock was sent");
+  }catch(e){ toast("Could not send the clock: " + e.message, true); }
+}
+
+
+autoClock();
+spdLabel();
+spdInfo();
+blLoad();
+sysInfo();
+alignStatus();
+poll();
+setInterval(poll, 1500);
+</script>
+<p class="info" style="text-align:center;line-height:1.7">LUNA OnStepNinja NS-4000 · <a href="https://github.com/OnStepNinja" target="_blank" rel="noopener" style="color:var(--accent)">🌙 LUNA Project</a></p>
+</body>
+</html>
