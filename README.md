@@ -2,7 +2,7 @@
 
 ESP32 telescope mount controller firmware: **OnStep 4.24j** (motor control) and the basic **LUNA AiBridge** features (Wi-Fi, Web pages, ASCOM Alpaca, file storage, LUNA Host Lab connection) running together on one ESP32, plus a **BLE wireless handbox**.
 
-- Firmware version: **v1.1.0** (`:=V#` = `LUNA OnStepNinja NS-4000 v1.1.0`)
+- Firmware version: **v1.1.1** (`:=V#` = `LUNA OnStepNinja NS-4000 v1.1.1`)
 - Based on [OnStep](https://github.com/hjd1964/OnStep) 4.24j by Howard Dutton (GPL v3). This is a derived work, **not an official OnStep release**. Please report problems here, not to the OnStep project.
 - Compatible with LUNA AiBridge, AiBridge Host and LUNA Host Lab.
 - Status: **prototype**. Tested on an NS-3000 board (ESP32, MaxESP3 pin map) with the motors detached from the mount. Not yet tested on a working mount.
@@ -24,7 +24,7 @@ Download **`NS-4000_v<version>_EN.zip`** from the **Releases** page. It contains
 - **BLE wireless handbox** (ESP32 / ESP32-C3, binaries in `handbox/`): N/S/E/W, Stop, Speed (same as the NS-3000 SEL button). Only one paired handbox connects; stops automatically if the link drops. The Console shows its signal strength and battery voltage.
 - **Tracking jitter measurement** (`:SXJ0` / `:GXJ0#`..`:GXJ2#`).
 
-See [COMMANDS.md](COMMANDS.md) for the custom LX200 commands and the Web API.
+See [COMMANDS.md](COMMANDS.md) for the custom LX200 commands and the Web API, and [CHANGELOG.md](CHANGELOG.md) for the changes.
 
 ## Contents
 
@@ -61,6 +61,7 @@ python -m esptool --chip esp32 --port COM6 --baud 921600 --before default_reset 
   arduino-cli compile -b "esp32:esp32:esp32:PartitionScheme=huge_app,FlashMode=dio,FlashFreq=80,CPUFreq=240" firmware/OnStepNinja08d_AiBridge
   ```
 - `Config.h`: `NS3000_WIFI_STA_SSID` / `_PASS` (defaults; normally set in the File Manager), `NS3000_WEB_PIN`, `NS3000_BLE`, `NS3000_MAX_STEP_PPS`, `NS3000_FAST_ISR`. The mount settings are the original OnStep ones.
+- **Fork or alt-az mounts:** the binaries are for German equatorial mounts (GEM). Set `MOUNT_TYPE` in `Config.h` to `FORK` or `ALTAZM` and build; for alt-az also set the azimuth limits `AXIS1_LIMIT_MIN` / `AXIS1_LIMIT_MAX` (for example -360 / 360).
 
 ## Safety
 

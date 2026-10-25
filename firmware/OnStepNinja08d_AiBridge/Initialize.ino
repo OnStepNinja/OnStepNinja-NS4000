@@ -182,6 +182,11 @@ void initWriteNvValues() {
   // EEPROM automatic initialization
   if (NV_FACTORY_RESET == ON) nv.writeLong(EE_autoInitKey,0);
 
+  // a firmware built for another MOUNT_TYPE (GEM / FORK / ALTAZM builds): the saved axis limits, park position and
+  // alignment belong to the old mount type, so start again from the Config.h defaults  2026,10/25 NS3000
+  byte mtLast=nv.read(EE_mountTypeBuilt); if (mtLast == 0) mtLast=GEM;
+  if (mtLast != MOUNT_TYPE) { VLF("MSG: MOUNT_TYPE changed, init NV to defaults"); nv.writeLong(EE_autoInitKey,0); }
+
   if (nv.readLong(EE_autoInitKey) != NV_INIT_KEY) {
     // wipe the whole nv memory
     VF("MSG: Wipe NV "); V(E2END+1); VLF(" Bytes (please wait)");
@@ -291,6 +296,7 @@ void initWriteNvValues() {
 
     // finally, stop the init from happening again
     nv.writeLong(EE_autoInitKey,NV_INIT_KEY);
+    if (MOUNT_TYPE != GEM) nv.write(EE_mountTypeBuilt,MOUNT_TYPE);  // GEM stays 0 (same as before v1.1.1)  2026,10/25 NS3000
 
     VLF("MSG: Init NV key written");
   }

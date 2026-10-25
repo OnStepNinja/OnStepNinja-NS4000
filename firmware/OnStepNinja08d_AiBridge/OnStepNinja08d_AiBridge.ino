@@ -174,10 +174,13 @@
         The buzzer did not sound (boot beep, during GOTO, :=SD#), so tone()/noTone() were rewritten to use the ESP32 LEDC driver directly. 2026,10/21
           Uses a dedicated buzzer timer and channel (low-speed channel 7) and stops the sound with esp_timer (src/HAL/ESP32/Analog.h).
           Setting it up only once played the boot beep (500ms) but not the later short beeps (50ms), so it is set up again on every call.
+        * v1.1.1: builds for FORK and ALTAZM mounts (Japanese version; set MOUNT_TYPE in Config.h). When the firmware of another MOUNT_TYPE starts, the saved NV settings
+          (axis limits, park position, alignment, site...) are reset to the Config.h defaults, because they belong to the old mount type (EE_mountTypeBuilt, GSB+182).
+          GEM boards updated from v1.1.0 keep their settings. ALTAZM builds use the azimuth limits -360..+360. 2026,10/25
 */
 
 
-#define VERSION3000        "LUNA OnStepNinja NS-4000 v1.1.0"       //:=SD1#  :=SD0# added. Update this number on a version up. 2024,5/15
+#define VERSION3000        "LUNA OnStepNinja NS-4000 v1.1.1"       //:=SD1#  :=SD0# added. Update this number on a version up. 2024,5/15
                                                         //
 
 

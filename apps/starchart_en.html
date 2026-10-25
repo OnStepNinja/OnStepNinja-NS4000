@@ -1086,8 +1086,6 @@ async function sendTime(){
 async function sendToMount(what){
   if(mount.type === "generic"){ toast("Sending site and date/time is not available in generic mode", true); return; }
   if(!$("dot").classList.contains("on")){ toast("Not connected to the mount", true); return; }
-  const txt = what === "loc" ? "Site (" + fmtLoc() + ")" : "Date/time (" + new Date().toLocaleString() + ")";
-  if(!confirm(txt + " — send to the mount?\nChanging the time or site can affect alignment and tracking.")) return;
   const r = what === "loc" ? await sendLoc() : await sendTime();
   const good = r.filter(ok1).length;
   toast((good === r.length ? "Sent" : "Some replies are unclear (" + good + "/" + r.length + ")") + " [" + r.map(x => x === null ? "no reply" : x.slice(0, 6)).join(", ") + "]", good !== r.length);

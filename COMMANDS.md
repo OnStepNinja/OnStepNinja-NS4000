@@ -6,7 +6,7 @@ All standard OnStep 4.24j LX200 commands work as in OnStep. These are the additi
 
 | Command | Reply | Meaning |
 |---|---|---|
-| `:=V#` (`:*V#`) | `LUNA OnStepNinja NS-4000 v1.1.0#` | firmware name and version. `:GVP#` = `On-Step` and `:GVN#` = `4.24j` are unchanged for compatibility |
+| `:=V#` (`:*V#`) | `LUNA OnStepNinja NS-4000 v1.1.1#` | firmware name and version. `:GVP#` = `On-Step` and `:GVN#` = `4.24j` are unchanged for compatibility |
 | `:=SD#` | | sound the buzzer |
 | `:=SD1#` / `:=SD0#` | | beep every 3 seconds during GOTO on / off |
 | `:=SH1#` / `:=SH0#` | | camera shutter output on / off (pin Shutter3000) |

@@ -24,7 +24,7 @@ button{cursor:pointer}a{color:var(--acc)}table{width:100%;border-collapse:collap
 <div class="card"><div class="lbl">Alpaca Discovery (ASCOM Alpaca devices on the LAN)</div>
 <p style="margin:8px 0"><button id="axBtn" onclick="alpFind()">&#128269; Search</button> <span id="axMsg" class="lbl"></span></p>
 <table id="axList"></table></div>
-<p class="foot">LUNA OnStepNinja NS-4000 v1.1.0 · <a href="https:&#47;&#47;github.com/OnStepNinja" target="_blank" rel="noopener">&#127769; LUNA Project</a><br>Based on <a href="https:&#47;&#47;github.com/hjd1964/OnStep" target="_blank" rel="noopener">OnStep</a> (GPL v3), LUNA AiBridge</p>
+<p class="foot">LUNA OnStepNinja NS-4000 v1.1.1 · <a href="https:&#47;&#47;github.com/OnStepNinja" target="_blank" rel="noopener">&#127769; LUNA Project</a><br>Based on <a href="https:&#47;&#47;github.com/hjd1964/OnStep" target="_blank" rel="noopener">OnStep</a> (GPL v3), LUNA AiBridge</p>
 <script>
 const $=id=>document.getElementById(id);
 async function api(p,o){const r=await fetch(p,o);const j=await r.json();if(!r.ok||j.status!=="success")throw new Error(j.message||("HTTP "+r.status));return j}

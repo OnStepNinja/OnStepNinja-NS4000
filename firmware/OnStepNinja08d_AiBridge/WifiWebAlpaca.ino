@@ -143,7 +143,7 @@ static void alpTelescope(const String &m, bool put) {
   if ((m == "connect" || m == "disconnect") && put) { alpConnected = m == "connect"; alpDone(); return; }
   if (m == "description") { alpOk("\"LUNA OnStepNinja NS-4000 mount (OnStep 4.24j based)\""); return; }
   if (m == "driverinfo") { alpOk("\"LUNA OnStepNinja NS-4000 Alpaca Telescope (built into the firmware). Based on OnStep (GPL v3), LUNA AiBridge\""); return; }
-  if (m == "driverversion") { alpOk("\"1.1.0\""); return; }  // same as the firmware version  2026,10/23
+  if (m == "driverversion") { alpOk("\"1.1.1\""); return; }  // same as the firmware version  2026,10/23
   if (m == "interfaceversion") { alpOk("3"); return; }
   if (m == "name") { alpOk("\"" + wwEsc(alpDevName()) + "\""); return; }
   if (m == "supportedactions") { alpOk("[]"); return; }

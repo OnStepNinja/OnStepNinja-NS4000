@@ -1,6 +1,6 @@
 # BLE wireless handbox
 
-The handbox program is distributed as **binaries only** (no source code), in the Release zip `NS-4000_v1.1.0_EN.zip`:
+The handbox program is distributed as **binaries only** (no source code), in the Release zip `NS-4000_v1.1.1_EN.zip`:
 
 - `handbox/bin_esp32/`, `handbox/bin_esp32c3/` - binaries and the flashing command for ESP32 and ESP32-C3
 - `handbox/lgpl_relink_esp32/`, `handbox/lgpl_relink_esp32c3/` - relink kits for the Arduino ESP32 core (LGPL 2.1) contained in the binaries (see THIRD_PARTY_NOTICES.md)

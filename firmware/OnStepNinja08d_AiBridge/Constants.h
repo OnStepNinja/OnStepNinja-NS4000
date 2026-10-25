@@ -275,6 +275,9 @@
 // rotator base address
 #define EE_rotBaseAxis3            GSB+174 // 8
 
+// MOUNT_TYPE of the firmware that last ran (0 = written before v1.1.1, always GEM)  2026,10/25 NS3000
+#define EE_mountTypeBuilt          GSB+182 // 1
+
 // offsets for the rotator
 #define EE_rotSpos                      0  // 4
 #define EE_rotBacklashPos               4  // 2

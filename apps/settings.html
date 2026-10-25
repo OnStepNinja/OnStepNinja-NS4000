@@ -139,7 +139,7 @@
 </style>
 </head>
 <body>
-<div class="ptop"><span class="dot" id="dot"></span><h1>NS-4000 Settings<span style="font-size:13px;color:var(--sub);font-weight:500;margin-left:10px;white-space:nowrap">v1.0.0</span></h1><a href="/">Console</a><a href="/control.html">Control</a><a href="/starchart_en.html">Star Chart</a><a href="/files">File Manager</a></div>
+<div class="ptop"><span class="dot" id="dot"></span><h1>NS-4000 Settings<span style="font-size:13px;color:var(--sub);font-weight:500;margin-left:10px;white-space:nowrap">v1.0.1</span></h1><a href="/">Console</a><a href="/control.html">Control</a><a href="/starchart_en.html">Star Chart</a><a href="/files">File Manager</a></div>
 <div class="hidden"><span id="stt"></span><button id="bCtl"></button><button id="bBeep"></button></div>
 
 
@@ -402,13 +402,14 @@ function renderInfo(){
       const rate = !tracking ? "" : isNaN(hz) || hz === 0 ? "" : (() => { const n = trackName(hz); return n ? " " + TRACK_RATES.find(t => t[0] === n)[1] : " " + hz.toFixed(3) + "Hz"; })();
       row("Tracking", (tracking ? "ON" : "OFF") + rate + (fl.includes("N") ? "" : "  slewing"), "", tracking ? "" : "w");
       row("Park", park + (fl.includes("H") ? " / at home" : ""), "", park === "Park failed" ? "w" : "");
+      row("Mount type", {E: "German equatorial (GEM)", K: "Fork equatorial", A: "Alt-Az"}[gu.charAt(ti)], "");
       if(gu.charAt(ti) === "E") row("Auto flip", fl.includes("a") ? "ON" : "OFF", "");
       const pier = gu.charAt(ti + 1); if(pier === "T" || pier === "W" || pier === "o") row("Pier side", {T: "East", W: "West", o: "None"}[pier], "");
     }
     const h = parseInt(r.Gh), o = parseInt(r.Go);
     if(!isNaN(h) && !isNaN(o)) row("Altitude limits", (h >= 0 ? "+" : "") + h + "° to +" + o + "°", "(min to max)");
     const me = parseInt(r.GXE9), mw = parseInt(r.GXEA);
-    if(!isNaN(me) && !isNaN(mw)) row("Meridian limit", "E " + (me / 4).toFixed(1) + "° W " + (mw / 4).toFixed(1) + "°", "(" + me + " min / " + mw + " min)");
+    if(!isNaN(me) && !isNaN(mw) && gu.charAt(gu.search(/[EKA]/)) === "E") row("Meridian limit", "E " + (me / 4).toFixed(1) + "° W " + (mw / 4).toFixed(1) + "°", "(" + me + " min / " + mw + " min)");
   }else if(mount.type === "ns5000"){
     L.push("&nbsp;"); L.push("<b style='color:var(--accent)'>NS-5000</b> Ver" + (mount.ver || "?"));
     L.push("<span class='who'>NS-5000-specific info is not supported yet</span>");
@@ -686,8 +687,9 @@ async function sendLoc(){
   return [a, b];
 }
 async function sendTime(){
-  const d = new Date(), off = d.getTimezoneOffset() / 60;
-  const g = (off < 0 ? "-" : "+") + pad(Math.floor(Math.abs(off))) + "." + (Math.abs(off) % 1 ? "5" : "0");
+  const d = new Date(), off = d.getTimezoneOffset(), am = Math.abs(off);
+
+  const g = (off < 0 ? "-" : "+") + pad(Math.floor(am / 60)) + (am % 60 ? ":" + pad(am % 60) : "");
   const res = [];
   res.push(await ask("SG" + g));
   res.push(await ask("SC" + pad(d.getMonth() + 1) + "/" + pad(d.getDate()) + "/" + pad(d.getFullYear() % 100)));
@@ -698,8 +700,6 @@ async function sendTime(){
 async function sendToMount(what){
   if(mount.type === "generic"){ toast("Sending site and date/time is not available in generic mode", true); return; }
   if(!$("dot").classList.contains("on")){ toast("Not connected to the mount", true); return; }
-  const txt = what === "loc" ? "Site (" + fmtLoc() + ")" : "Date/time (" + new Date().toLocaleString() + ")";
-  if(!confirm(txt + " — send to the mount?\nChanging the time or site can affect alignment and tracking.")) return;
   const r = what === "loc" ? await sendLoc() : await sendTime();
   const good = r.filter(ok1).length;
   toast((good === r.length ? "Sent" : "Some replies are unclear (" + good + "/" + r.length + ")") + " [" + r.map(x => x === null ? "no reply" : x.slice(0, 6)).join(", ") + "]", good !== r.length);
