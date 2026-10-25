@@ -10,7 +10,7 @@ All standard OnStep 4.24j LX200 commands work as in OnStep. These are the additi
 | `:=SD#` | | sound the buzzer |
 | `:=SD1#` / `:=SD0#` | | beep every 3 seconds during GOTO on / off |
 | `:=SH1#` / `:=SH0#` | | camera shutter output on / off (pin Shutter3000) |
-| `:SX93,n#` | `1` | GOTO speed: `5` 50%, `4` 75%, `3` 100%, `2` 150%, `1` 200% of the base rate; `a`..`z` = 50%..about 260% in finer steps |
+| `:SX93,n#` | | GOTO speed: `5` 50%, `4` 75%, `3` 100%, `2` 150%, `1` 200% of the base rate |
 | `:SX94,d#` | `1` | set the base slew rate (100%) in deg/s, 0.001..20. Saved in NV. Refused while slewing. Limited so that 200% does not exceed `NS3000_MAX_STEP_PPS` |
 | `:GX9G#` | `0.800#` | base slew rate in deg/s |
 | `:GXWP#` | `45000,252#` | step rate limit in pps, and how many times sidereal that is |
