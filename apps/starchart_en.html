@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  LUNA AiBridge StarChart v0.9.0
+  LUNA AiBridge StarChart v0.9.1
   Copyright (c) 2026 Nishioka Sadahiko. All rights reserved. Freeware: see LICENSE.
   Star data: d3-celestial (BSD 3-Clause, Olaf Frohn) - see THIRD_PARTY_LICENSES.md
 -->
@@ -146,7 +146,7 @@
   <button id="bStop" class="stop">STOP</button>
 </div>
 <div id="hud"></div>
-<div id="branding"><span>LUNA AiBridge StarChart v0.9.0</span><button id="supportBtn" title="Support development">💗</button></div>
+<div id="branding"><span>LUNA AiBridge StarChart v0.9.1</span><button id="supportBtn" title="Support development">💗</button></div>
 <div class="panel" id="info">
   <h2 id="iName"></h2><div class="sub" id="iSub"></div>
   <div class="row"><button id="bClose">Close</button><button id="bAlign">Align</button><button id="bGoto" class="go">GOTO</button></div>
@@ -200,7 +200,7 @@
     <h2 style="margin:0 0 8px">Support development</h2>
     <p>This app is free to use. If you find it useful, a $5 (one coffee) contribution toward continued development is welcome (never required).</p>
     <p><a href="https://www.paypal.com/ncp/payment/WWQ7NLZ2HZ53U" target="_blank" rel="noopener" style="color:#ff90ab;">Open support link</a></p>
-    <p style="font-size:11px;color:var(--sub);margin:10px 0 0">LUNA AiBridge StarChart v0.9.0 · © 2026 Nishioka Sadahiko · Freeware<br>Star data: d3-celestial (BSD-3, Olaf Frohn)</p>
+    <p style="font-size:11px;color:var(--sub);margin:10px 0 0">LUNA AiBridge StarChart v0.9.1 · © 2026 Nishioka Sadahiko · Freeware<br>Star data: d3-celestial (BSD-3, Olaf Frohn)</p>
     <div class="row"><button onclick="document.getElementById('supportPopover').classList.remove('show')">Close</button></div>
   </div>
 </div>
@@ -787,13 +787,14 @@ function renderInfo(){
       const rate = !tracking ? "" : isNaN(hz) || hz === 0 ? "" : (() => { const n = trackName(hz); return n ? " " + TRACK_RATES.find(t => t[0] === n)[1] : " " + hz.toFixed(3) + "Hz"; })();
       row("Tracking", (tracking ? "ON" : "OFF") + rate + (fl.includes("N") ? "" : "  slewing"), "", tracking ? "" : "w");
       row("Park", park + (fl.includes("H") ? " / at home" : ""), "", park === "Park failed" ? "w" : "");
+      row("Mount type", {E: "German equatorial (GEM)", K: "Fork equatorial", A: "Alt-Az"}[gu.charAt(ti)], "");
       if(gu.charAt(ti) === "E") row("Auto flip", fl.includes("a") ? "ON" : "OFF", "");
       const pier = gu.charAt(ti + 1); if(pier === "T" || pier === "W" || pier === "o") row("Pier side", {T: "East", W: "West", o: "None"}[pier], "");
     }
     const h = parseInt(r.Gh), o = parseInt(r.Go);
     if(!isNaN(h) && !isNaN(o)) row("Altitude limits", (h >= 0 ? "+" : "") + h + "° to +" + o + "°", "(min to max)");
     const me = parseInt(r.GXE9), mw = parseInt(r.GXEA);
-    if(!isNaN(me) && !isNaN(mw)) row("Meridian limit", "E " + (me / 4).toFixed(1) + "° W " + (mw / 4).toFixed(1) + "°", "(" + me + " min / " + mw + " min)");
+    if(!isNaN(me) && !isNaN(mw) && gu.charAt(gu.search(/[EKA]/)) === "E") row("Meridian limit", "E " + (me / 4).toFixed(1) + "° W " + (mw / 4).toFixed(1) + "°", "(" + me + " min / " + mw + " min)");
   }else if(mount.type === "ns5000"){
     L.push("&nbsp;"); L.push("<b style='color:var(--accent)'>NS-5000</b> Ver" + (mount.ver || "?"));
     L.push("<span class='who'>NS-5000-specific info is not supported yet</span>");
@@ -1072,8 +1073,9 @@ async function sendLoc(){
   return [a, b];
 }
 async function sendTime(){
-  const d = new Date(), off = d.getTimezoneOffset() / 60;
-  const g = (off < 0 ? "-" : "+") + pad(Math.floor(Math.abs(off))) + "." + (Math.abs(off) % 1 ? "5" : "0");
+  const d = new Date(), off = d.getTimezoneOffset(), am = Math.abs(off); // minutes; local time + value = UTC (Tokyo = -540)
+  // OnStep :SG accepts only sHH or sHH:MM (MM = 30/45); sHH.H is a format error and the time zone stays unset
+  const g = (off < 0 ? "-" : "+") + pad(Math.floor(am / 60)) + (am % 60 ? ":" + pad(am % 60) : "");
   const res = [];
   res.push(await ask("SG" + g));
   res.push(await ask("SC" + pad(d.getMonth() + 1) + "/" + pad(d.getDate()) + "/" + pad(d.getFullYear() % 100)));
