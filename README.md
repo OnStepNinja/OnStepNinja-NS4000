@@ -11,6 +11,16 @@ ESP32 telescope mount controller firmware: **OnStep 4.24j** (motor control) and 
 
 Download **`NS-4000_v<version>_EN.zip`** from the **Releases** page. It contains everything below, including the firmware and handbox binaries (`bin/`, `handbox/`). The repository itself holds the source, the apps and the documents.
 
+## LUNA Base and LUNA Store (newer firmware)
+
+The firmware in the Releases of this repository is **v1.1.1**. Newer versions (**1.2.x**, now **1.2.8**) are distributed through **LUNA Store**, for German equatorial, fork and alt-azimuth mounts.
+
+1. Write **LUNA Base** to the board once over USB: [LUNA Base v0.8.4 (English)](https://github.com/OnStepNinja/OnStepNinja-NS4000/releases/tag/LUNA_Base_v0.8.4) · [Japanese edition](https://github.com/OnStepNinja/OnStepNinja-NS4000/releases/tag/LUNA_Base_v0.8.4_ja)
+2. Join the board's Wi-Fi `LUNA-BASE-xxxx` (or set your home Wi-Fi) and open `http://192.168.4.1`
+3. Choose the firmware in **LUNA Store**. Later updates are done the same way, over Wi-Fi
+
+**1.2.8 fixes** losing access to the board's Wi-Fi `OnStepNinja-xxxx` after entering a wrong home Wi-Fi setting (the board kept searching for the home Wi-Fi without a pause). LUNA Base v0.8.4 has the same fix.
+
 ## Features (added to OnStep)
 
 - **Wi-Fi** AP + home Wi-Fi (STA) at the same time (replaces Bluetooth Classic). LX200 commands on **TCP 9999 / 9998** (SkySafari, LUNA Host Lab, ASCOM drivers).
